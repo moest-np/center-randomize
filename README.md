@@ -7,6 +7,7 @@ The goal of this script is to assign exam centers to students.
    * Any school has students that have not been assigned a center.
    * Distribution across centers is uneven
 3. Perform sanity check of distributed centers 
+4. Manually reassign impractical centers and odd lot allocations. Keep changes to minimum. 
 
 ## Allocation Guidelines
 
