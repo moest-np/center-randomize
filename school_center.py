@@ -28,7 +28,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     distance = radius_earth * c
     return distance
 
-def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], distance_threshold: float) -> List[Dict[str, any]]:
+def centers_within_distance(school: Dict[str, str], centers: List[Dict[str, str]], distance_threshold: float) -> List[Dict[str, str]]:
     """
     Return List of centers that are within given distance from school.
     If there are no centers within given distance return one that is closest
@@ -39,34 +39,22 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
     def center_to_dict(c, distance):
         return {'cscode': c['cscode'], 'name': c['name'], 'address': c['address'], 'capacity': c['capacity'], 'lat': c['lat'], 'long': c['long'], 'distance_km': distance}
     
-    def sort_key(c):
-        # intent: sort by preference score DESC then by distance_km ASC 
-        # leaky abstraction - sorted requires a single numberic value for each element
-        return c['distance_km'] * random.uniform(1,5) - get_pref(school['scode'], c['cscode'])*100
-    
     school_lat = school.get('lat')
     school_long = school.get('long')
-    if len(school_lat) == 0 or len(school_long) == 0:
-        return []
-    
     within_distance = []
-    nearest_distance = None;
+    nearest_distance = None
     nearest_center = None
-    for c in centers: 
-        distance = haversine_distance(float(school_lat), float(school_long), float(c.get('lat')), float(c.get('long')))
-        if school['scode'] == c['cscode']:
-            continue
-        if nearest_center == None or distance < nearest_distance:
-            nearest_center = c
-            nearest_distance = distance
-
+    for c in centers:
+        distance = haversine_distance(float(school_lat or 0), float(school_long or 0), float(c.get('lat') or 0), float(c.get('long') or 0))
         if distance <= distance_threshold and get_pref(school['scode'], c['cscode']) > PREF_CUTOFF:
             within_distance.append(center_to_dict(c, distance))
-            
-    if len(within_distance) > 0:
-        return sorted(within_distance, key=sort_key) 
-    else: # if there are no centers within given  threshold, return one that is closest
+        elif nearest_center == None or (nearest_distance is not None and distance < nearest_distance):
+            nearest_center = c
+            nearest_distance = distance
+    
+    if not within_distance and nearest_center:
         return [center_to_dict(nearest_center, nearest_distance)]
+    return sorted(within_distance, key=lambda c: c['distance_km'])    
 
 def read_tsv(file_path: str) -> List[Dict[str, str]]:
     data = []
