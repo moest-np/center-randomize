@@ -23,13 +23,13 @@ The goal of this script is to assign exam centers to students.
 
 ## Parameters 
 
-PREF_DISTANCE_THRESHOLD = 2  # Preferred threshold distance in kilometers, ceters should be within this distance from school if possible
+PREF_DISTANCE_THRESHOLD = 2  # Preferred threshold distance in kilometers, centers should be within this distance from school if possible
 
 ABS_DISTANCE_THRESHOLD = 7  # Absolute threshold distance in kilometers
 
 MIN_STUDENT_IN_CENTER = 10  # minimum number of students from a school to be assigned to a center under normal circumstances
 
-STRETCH_CAPACITY_FACTOR = 0.02  # how much can center capacity be streched if need arises
+STRETCH_CAPACITY_FACTOR = 0.02  # how much can center capacity be stretched if need arises
 
 PREF_CUTOFF = -4 # Do not allocate students with pref score less than cutoff
 
