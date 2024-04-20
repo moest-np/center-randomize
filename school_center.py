@@ -70,10 +70,19 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
 
 def read_tsv(file_path: str) -> List[Dict[str, str]]:
     data = []
-    with open(file_path, 'r', newline='', encoding='utf-8') as file:
-        reader = csv.DictReader(file, delimiter='\t')
-        for row in reader:
-            data.append(dict(row))
+    try:
+        with open(file_path, 'r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file, delimiter='\t')
+            for row in reader:
+                data.append(dict(row))
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found.")
+    except PermissionError:
+        print(f"Error: Permission denied while accessing file '{file_path}'.")
+    except IOError:
+        print(f"Error opening or reading file: {file_path}")
+    except Exception as e:
+        print(f"Error: An unexpected error occurred while reading file '{file_path}': {e}")
     return data
 
 def read_prefs(file_path: str) -> Dict[str, Dict[str, int]]:
