@@ -1,3 +1,5 @@
+OUTPUT_DIR = 'results/'
+
 PREF_DISTANCE_THRESHOLD = 2  # Preferred threshold distance in kilometers
 ABS_DISTANCE_THRESHOLD = 7  # Absolute threshold distance in kilometers
 MIN_STUDENT_IN_CENTER = 10  # minimum number of students from a school to be assigned to a center in normal circumstances
@@ -8,8 +10,17 @@ import math
 import csv
 import random
 import argparse
+import os
 from typing import Dict, List
 
+
+def create_dir(dirPath:str):
+    """
+    Create the given directory if it doesn't exists
+    - Creates all the directories needed to resolve to the provided directory path
+    """
+    if not os.path.exists(dirPath):
+        os.makedirs(dirPath)
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
@@ -142,7 +153,9 @@ prefs = read_prefs(args.prefs_tsv)
 remaining = 0 # stores count of non allocated students 
 allocations = {}  # to track mutual allocations
 
-with open('school-center-distance.tsv', 'w') as intermediate_file, open(args.output, 'w') as a_file:
+create_dir(OUTPUT_DIR) # Create the output directory if not exists
+with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w') as intermediate_file, \
+open(OUTPUT_DIR + args.output, 'w') as a_file:
     writer = csv.writer(intermediate_file, delimiter="\t")
     writer.writerow(["scode", "s_count", "school_name", "school_lat", "school_long", "cscode", "center_name", "center_address", "center_capacity", "distance_km"])
     
