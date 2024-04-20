@@ -9,7 +9,10 @@ import csv
 import random
 import argparse
 from typing import Dict, List
+import logging
+import sys
 
+logging.basicConfig(level=logging.ERROR)
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
@@ -68,6 +71,7 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
     else: # if there are no centers within given  threshold, return one that is closest
         return [center_to_dict(nearest_center, nearest_distance)]
 
+
 def read_tsv(file_path: str) -> List[Dict[str, str]]:
     data = []
     try:
@@ -75,29 +79,45 @@ def read_tsv(file_path: str) -> List[Dict[str, str]]:
             reader = csv.DictReader(file, delimiter='\t')
             for row in reader:
                 data.append(dict(row))
-    except FileNotFoundError:
-        print(f"Error: File '{file_path}' not found.")
-    except PermissionError:
-        print(f"Error: Permission denied while accessing file '{file_path}'.")
-    except IOError:
-        print(f"Error opening or reading file: {file_path}")
+    except FileNotFoundError as e:
+        logging.error(f"Error: File '{file_path}' not found.")
+        sys.exit(1)
+    except PermissionError as e:
+        logging.error(f"Error: Permission denied while accessing file '{file_path}'.")
+        sys.exit(1)
+    except IOError as e:
+        logging.error(f"Error opening or reading file: {file_path}")
+        sys.exit(1)
     except Exception as e:
-        print(f"Error: An unexpected error occurred while reading file '{file_path}': {e}")
+        logging.error(f"Error: An unexpected error occurred while reading file '{file_path}': {e}")
+        sys.exit(1)
     return data
 
 def read_prefs(file_path: str) -> Dict[str, Dict[str, int]]:
     prefs = {}
-    with open(file_path, 'r', newline='', encoding='utf-8') as file:
-        reader = csv.DictReader(file, delimiter='\t')
-        for row in reader:
-            if prefs.get(row['scode']):
-                if prefs[row['scode']].get(row['cscode']):
-                    prefs[row['scode']][row['cscode']] += int(row['pref'])
+    try:
+        with open(file_path, 'r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file, delimiter='\t')
+            for row in reader:
+                if prefs.get(row['scode']):
+                    if prefs[row['scode']].get(row['cscode']):
+                        prefs[row['scode']][row['cscode']] += int(row['pref'])
+                    else:
+                        prefs[row['scode']][row['cscode']] = int(row['pref'])
                 else:
-                    prefs[row['scode']][row['cscode']] = int(row['pref'])
-            else:
-                prefs[row['scode']] = {row['cscode']: int(row['pref'])}
-
+                    prefs[row['scode']] = {row['cscode']: int(row['pref'])}
+    except FileNotFoundError as e:
+        logging.error(f"Error: File '{file_path}' not found.")
+        sys.exit(1)
+    except PermissionError as e:
+        logging.error(f"Error: Permission denied while accessing file '{file_path}'.")
+        sys.exit(1)
+    except IOError as e:
+        logging.error(f"Error opening or reading file: {file_path}")
+        sys.exit(1)
+    except Exception as e:
+        logging.error(f"Error: An unexpected error occurred while reading file '{file_path}': {e}")
+        sys.exit(1)
     return prefs
 
 def get_pref(scode, cscode) -> int:
