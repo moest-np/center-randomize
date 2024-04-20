@@ -10,6 +10,10 @@ import random
 import argparse
 from typing import Dict, List
 
+from utils.custom_logger import setup_logger
+
+
+logger = setup_logger(__name__)
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
@@ -191,8 +195,8 @@ with open('school-center-distance.tsv', 'w') as intermediate_file, open(args.out
             print(f"{to_allot}/{s['count']} left for {s['scode']} {s['name-address']} centers: {len(centers_for_school)}")
                 
 
-    print("Remaining capacity at each center (remaining_capacity cscode):")
-    print(sorted([(v,k) for k, v in centers_remaining_cap.items() if v != 0]))
-    print(f"Total remaining capacity across all centers: {sum({k:v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
-    print(f"Students not assigned: {remaining}")
+    logger.info("Remaining capacity at each center (remaining_capacity cscode):")
+    logger.info(sorted([(v,k) for k, v in centers_remaining_cap.items() if v != 0]))
+    logger.info(f"Total remaining capacity across all centers: {sum({k:v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
+    logger.info(f"Students not assigned: {remaining}")
 
