@@ -142,7 +142,7 @@ prefs = read_prefs(args.prefs_tsv)
 remaining = 0 # stores count of non allocated students 
 allocations = {}  # to track mutual allocations
 
-with open('school-center-distance.tsv', 'w') as intermediate_file, open(args.output, 'w') as a_file:
+with open('school-center-distance.tsv', 'w', encoding='utf-8') as intermediate_file, open(args.output, 'w', encoding='utf-8') as a_file:
     writer = csv.writer(intermediate_file, delimiter="\t")
     writer.writerow(["scode", "s_count", "school_name", "school_lat", "school_long", "cscode", "center_name", "center_address", "center_capacity", "distance_km"])
     
