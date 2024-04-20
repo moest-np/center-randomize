@@ -28,6 +28,9 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     distance = radius_earth * c
     return distance
 
+# Distance cache to avoid redundant calculations
+distance_cache = {}
+
 def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], distance_threshold: float) -> List[Dict[str, any]]:
     """
     Return List of centers that are within given distance from school.
@@ -52,6 +55,17 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
     within_distance = []
     nearest_distance = None;
     nearest_center = None
+
+     # Use distance cache
+    cache_key = (school_lat, school_long)
+    if cache_key in distance_cache:
+        distances = distance_cache[cache_key]
+    else:
+        distances = {c['cscode']: haversine_distance(
+            float(school_lat), float(school_long), float(c.get('lat')), float(c.get('long'))) for c in centers}
+        distance_cache[cache_key] = distances
+
+        
     for c in centers: 
         distance = haversine_distance(float(school_lat), float(school_long), float(c.get('lat')), float(c.get('long')))
         if school['scode'] == c['cscode']:
