@@ -1,0 +1,8 @@
+# Python specific
+*.py[cod]
+*$py.class
+*.DS_Store
+__pycache__/
+
+# Project specific
+/logs/*
