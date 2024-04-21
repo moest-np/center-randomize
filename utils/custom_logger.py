@@ -1,14 +1,22 @@
 """Custom logging module with some formatting."""
 
+import os
 import sys
 import logging.config
-from os.path import abspath, dirname, join
+from os.path import abspath, dirname, join, exists
 
 
-MAX_LOGS_SIZE: int = 500000
 ROOT_DIR: str = abspath(dirname(dirname(__file__)))
+LOGS_DIR: str = join(ROOT_DIR, "logs")
 LOGS_TARGET: str = join(ROOT_DIR, "logs", "custom_logs.log")
 CUSTOM_FILE_HANDLER_PATH = "utils.custom_file_handler.CustomFileHandler"
+
+if not exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
+
+if not exists(LOGS_TARGET):
+    with open(LOGS_TARGET, "a", encoding="utf-8") as file:
+        os.utime(LOGS_TARGET, None)
 
 
 LOGGING_CONFIG: dict = {
