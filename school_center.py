@@ -1,11 +1,3 @@
-OUTPUT_DIR = 'results/'
-
-PREF_DISTANCE_THRESHOLD = 2  # Preferred threshold distance in kilometers
-ABS_DISTANCE_THRESHOLD = 7  # Absolute threshold distance in kilometers
-MIN_STUDENT_IN_CENTER = 10  # minimum number of students from a school to be assigned to a center in normal circumstances
-STRETCH_CAPACITY_FACTOR = 0.02  # how much can center capacity be streched if need arises
-PREF_CUTOFF = -4 # Do not allocate students with pref score less than cutoff
-
 import math
 import csv
 import random
@@ -13,10 +5,16 @@ import argparse
 import os
 from typing import Dict, List
 
+OUTPUT_DIR = 'results/'
+PREF_DISTANCE_THRESHOLD = 2  # Preferred threshold distance in kilometers
+ABS_DISTANCE_THRESHOLD = 7  # Absolute threshold distance in kilometers
+MIN_STUDENT_IN_CENTER = 10  # minimum number of students from a school to be assigned to a center in normal circumstances
+STRETCH_CAPACITY_FACTOR = 0.02  # how much can center capacity be stretched if need arises
+PREF_CUTOFF = -4  # Do not allocate students with pref score less than cutoff
 
-def create_dir(dirPath:str):
+def create_dir(dirPath: str):
     """
-    Create the given directory if it doesn't exists
+    Create the given directory if it doesn't exist
     - Creates all the directories needed to resolve to the provided directory path
     """
     if not os.path.exists(dirPath):
@@ -135,33 +133,106 @@ def is_allocated(scode1: str, scode2:str) -> bool:
         return allocations[scode1].get(scode2) != None
     else:
         return False
+    # check if the file exists
+def validate_school_file(file_path: str) -> bool:
+    '''
+    validating the format of the school input file
+    '''
+    if not os.path.exists(file_path):
+        print(f"School file '{file_path}' not found.")
+        return False
+    
+    # open the file and read the header
+    with open(file_path, 'r', newline='', encoding='utf-8') as file:
+        header = file.readline().strip().split('\t')
+        required_columns = ['scode', 'count', 'name-address', 'lat', 'long']
+        if header != required_columns:
+            print(f"Invalid school file format. Expected columns: {required_columns}")
+            return False
+        
+    return True
+
+def validate_center_file(file_path: str) -> bool:
+    '''
+    validating the format of the center input file
+    '''
+    # check if file exists
+    if not os.path.exists(file_path):
+        print(f"Center file '{file_path}' not found.")
+        return False
+    # open files and read header
+    with open(file_path, 'r', newline='', encoding='utf-8') as file:
+        header = file.readline().strip().split('\t')
+        required_columns = ['cscode', 'capacity', 'name', 'address', 'lat', 'long']
+        # compare the header with required columns
+        if header != required_columns:
+            print(f"Invalid center file format. Expected columns: {required_columns}")
+            return False
+        
+    return True
+
+def validate_preference_file(file_path: str) -> bool:
+    '''
+    validating the format of the preference input file
+    '''
+    # check if the file exists
+    if not os.path.exists(file_path):
+        print(f"Preference file '{file_path}' not found.")
+        return False
+    
+    # open the file and read the header
+    with open(file_path, 'r', newline='', encoding='utf-8') as file:
+        header = file.readline().strip().split('\t')
+        required_columns = ['scode', 'cscode', 'pref', 'reason']
+        # compare the header with required columns
+        if header != required_columns:
+            print(f"Invalid preference file format. Expected columns: {required_columns}")
+            return False
+        
+    return True
+
+def validate_input_files(school_file: str, center_file: str, preference_file: str) -> bool:
+    '''
+    validating all the input files before proceeding with the allocation process
+    '''
+    return (
+        validate_school_file(school_file) and
+        validate_center_file(center_file) and
+        validate_preference_file(preference_file)
+    )
 
 parser = argparse.ArgumentParser(
-                    prog='center randomizer',
-                    description='Assigns centers to exam centers to students')
+    prog='center randomizer',
+    description='Assigns centers to exam centers to students'
+)
 parser.add_argument('schools_tsv', default='schools.tsv', help="Tab separated (TSV) file containing school details")
 parser.add_argument('centers_tsv', default='centers.tsv', help="Tab separated (TSV) file containing center details")
 parser.add_argument('prefs_tsv', default='prefs.tsv', help="Tab separated (TSV) file containing preference scores")
 parser.add_argument('-o', '--output', default='school-center.tsv', help='Output file')
 args = parser.parse_args()
 
-schools = sorted(read_tsv(args.schools_tsv), key= school_sort_key)
+if not validate_input_files(args.schools_tsv, args.centers_tsv, args.prefs_tsv):
+    exit()
+
+schools = sorted(read_tsv(args.schools_tsv), key=school_sort_key)
 centers = read_tsv(args.centers_tsv)
-centers_remaining_cap = {c['cscode']:int(c['capacity']) for c in centers}
+centers_remaining_cap = {c['cscode']: int(c['capacity']) for c in centers}
 prefs = read_prefs(args.prefs_tsv)
 
-remaining = 0 # stores count of non allocated students 
+remaining = 0  # stores count of non-allocated students
 allocations = {}  # to track mutual allocations
 
-create_dir(OUTPUT_DIR) # Create the output directory if not exists
+create_dir(OUTPUT_DIR)  # Create the output directory if not exists
 with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-8') as intermediate_file, \
-open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
+        open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
     writer = csv.writer(intermediate_file, delimiter="\t")
-    writer.writerow(["scode", "s_count", "school_name", "school_lat", "school_long", "cscode", "center_name", "center_address", "center_capacity", "distance_km"])
-    
+    writer.writerow(["scode", "s_count", "school_name", "school_lat", "school_long", "cscode", "center_name",
+                     "center_address", "center_capacity", "distance_km"])
+
     allocation_file = csv.writer(a_file, delimiter='\t')
-    allocation_file.writerow(["scode", "school", "cscode", "center", "center_address", "allocation", "distance_km"])
-    
+    allocation_file.writerow(
+        ["scode", "school", "cscode", "center", "center_address", "allocation", "distance_km"])
+
     for s in schools:
         centers_for_school = centers_within_distance(s, centers, PREF_DISTANCE_THRESHOLD)
         to_allot = int(s['count'])
@@ -169,9 +240,11 @@ open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
 
         allocated_centers = {}
 
-        # per_center = math.ceil(to_allot / min(calc_num_centers(to_allot), len(centers_for_school))) 
+        # per_center = math.ceil(to_allot / min(calc_num_centers(to_allot), len(centers_for_school)))
         for c in centers_for_school:
-            writer.writerow([s['scode'], s['count'], s['name-address'], s['lat'], s['long'], c['cscode'], c['name'], c['address'], c['capacity'], c['distance_km'] ])
+            writer.writerow(
+                [s['scode'], s['count'], s['name-address'], s['lat'], s['long'], c['cscode'], c['name'], c['address'],
+                 c['capacity'], c['distance_km']])
             if is_allocated(c['cscode'], s['scode']):
                 continue
             next_allot = min(to_allot, per_center, max(centers_remaining_cap[c['cscode']], MIN_STUDENT_IN_CENTER))
@@ -181,13 +254,14 @@ open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
                 # allocation.writerow([s['scode'], s['name-address'], c['cscode'], c['name'], c['address'], next_allot, c['distance_km']])
                 to_allot -= next_allot
                 centers_remaining_cap[c['cscode']] -= next_allot
-        
-        if to_allot > 0: # try again with relaxed constraints and more capacity at centers 
+
+        if to_allot > 0:  # try again with relaxed constraints and more capacity at centers
             expanded_centers = centers_within_distance(s, centers, ABS_DISTANCE_THRESHOLD)
             for c in expanded_centers:
                 if is_allocated(c['cscode'], s['scode']):
                     continue
-                stretched_capacity = math.floor(int(c['capacity']) * STRETCH_CAPACITY_FACTOR + centers_remaining_cap[c['cscode']])
+                stretched_capacity = math.floor(
+                    int(c['capacity']) * STRETCH_CAPACITY_FACTOR + centers_remaining_cap[c['cscode']])
                 next_allot = min(to_allot, max(stretched_capacity, MIN_STUDENT_IN_CENTER))
                 if to_allot > 0 and next_allot > 0 and stretched_capacity >= next_allot:
                     allocated_centers[c['cscode']] = c
@@ -197,15 +271,17 @@ open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
                     centers_remaining_cap[c['cscode']] -= next_allot
 
         for c in allocated_centers.values():
-            allocation_file.writerow([s['scode'], s['name-address'], c['cscode'], c['name'], c['address'], allocations[s['scode']][c['cscode']], c['distance_km']])
+            allocation_file.writerow(
+                [s['scode'], s['name-address'], c['cscode'], c['name'], c['address'], allocations[s['scode']][c['cscode']],
+                 c['distance_km']])
 
-        if to_allot > 0: 
-            remaining+=to_allot
+        if to_allot > 0:
+            remaining += to_allot
             print(f"{to_allot}/{s['count']} left for {s['scode']} {s['name-address']} centers: {len(centers_for_school)}")
-                
 
     print("Remaining capacity at each center (remaining_capacity cscode):")
-    print(sorted([(v,k) for k, v in centers_remaining_cap.items() if v != 0]))
-    print(f"Total remaining capacity across all centers: {sum({k:v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
+    print(sorted([(v, k) for k, v in centers_remaining_cap.items() if v != 0]))
+    print(
+        f"Total remaining capacity across all centers: {sum({k: v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
     print(f"Students not assigned: {remaining}")
 
