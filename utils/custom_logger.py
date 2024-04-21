@@ -26,6 +26,10 @@ LOGGING_CONFIG: dict = {
             "datefmt": "%y-%m-%d %H:%M:%S",
             "format": "🚀 %(asctime)s - %(name)s - %(levelname)s - %(message)s \n",
         },
+        "warn": {
+            "datefmt": "%y-%m-%d %H:%M:%S",
+            "format": "🔔 %(asctime)s - %(name)s - %(levelname)s - %(message)s \n",
+        },
         "error": {
             "datefmt": "%y-%m-%d %H:%M:%S",
             "format": "❌ %(asctime)s - %(name)s - %(levelname)s - %(message)s \n",
@@ -46,6 +50,12 @@ LOGGING_CONFIG: dict = {
             "formatter": "standard",
             "class": "logging.StreamHandler",
         },
+        "console_warn": {
+            "level": "WARN",
+            "formatter": "warn",
+            "stream": sys.stdout,
+            "class": "logging.StreamHandler",
+        },
         "console_error": {
             "level": "ERROR",
             "stream": sys.stderr,
@@ -57,7 +67,7 @@ LOGGING_CONFIG: dict = {
         "": {
             "level": "INFO",
             "propagate": True,
-            "handlers": ["file_error", "console_info", "console_error"],
+            "handlers": ["file_error", "console_info", "console_warn", "console_error"],
         }
     },
 }
