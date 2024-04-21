@@ -99,3 +99,8 @@ venv_*/
 .vimrc
 
 mypy.ini
+# Output Directories
+output
+result
+results
+outputs
