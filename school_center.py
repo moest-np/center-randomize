@@ -7,13 +7,16 @@ PREF_CUTOFF = -4 # Do not allocate students with pref score less than cutoff
 import math
 import csv
 import random
+import logging
 import argparse
 from typing import Dict, List
 
-from utils.custom_logger import setup_logger
+from utils.custom_logger import configure_logging
 
 
-logger = setup_logger(__name__)
+configure_logging()
+
+logger = logging.getLogger(__name__)
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
@@ -199,4 +202,3 @@ with open('school-center-distance.tsv', 'w') as intermediate_file, open(args.out
     logger.info(sorted([(v,k) for k, v in centers_remaining_cap.items() if v != 0]))
     logger.info(f"Total remaining capacity across all centers: {sum({k:v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
     logger.info(f"Students not assigned: {remaining}")
-
