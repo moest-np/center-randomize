@@ -101,3 +101,9 @@ venv_*/
 /logs/*
 mypy.ini
 *.DS_Store
+
+# Output Directories
+output
+result
+results
+outputs
