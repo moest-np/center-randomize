@@ -9,10 +9,10 @@ import csv
 import random
 import argparse
 from typing import Dict, List
-import logging
 import sys
 
-logging.basicConfig(level=logging.ERROR)
+from logging import getLogger
+logger = getLogger(__name__)
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
@@ -80,16 +80,16 @@ def read_tsv(file_path: str) -> List[Dict[str, str]]:
             for row in reader:
                 data.append(dict(row))
     except FileNotFoundError as e:
-        logging.error(f"Error: File '{file_path}' not found.")
+        logger.error(f"File '{file_path}' not found.")
         sys.exit(1)
     except PermissionError as e:
-        logging.error(f"Error: Permission denied while accessing file '{file_path}'.")
+        logger.error(f"Permission denied while accessing file '{file_path}'.")
         sys.exit(1)
     except IOError as e:
-        logging.error(f"Error opening or reading file: {file_path}")
+        logger.error(f"Error opening or reading file: {file_path}")
         sys.exit(1)
     except Exception as e:
-        logging.error(f"Error: An unexpected error occurred while reading file '{file_path}': {e}")
+        logger.error(f"An unexpected error occurred while reading file '{file_path}': {e}")
         sys.exit(1)
     return data
 
@@ -107,16 +107,16 @@ def read_prefs(file_path: str) -> Dict[str, Dict[str, int]]:
                 else:
                     prefs[row['scode']] = {row['cscode']: int(row['pref'])}
     except FileNotFoundError as e:
-        logging.error(f"Error: File '{file_path}' not found.")
+        logger.error(f"File '{file_path}' not found.")
         sys.exit(1)
     except PermissionError as e:
-        logging.error(f"Error: Permission denied while accessing file '{file_path}'.")
+        logger.error(f"Permission denied while accessing file '{file_path}'.")
         sys.exit(1)
     except IOError as e:
-        logging.error(f"Error opening or reading file: {file_path}")
+        logger.error(f"Error opening or reading file: {file_path}")
         sys.exit(1)
     except Exception as e:
-        logging.error(f"Error: An unexpected error occurred while reading file '{file_path}': {e}")
+        logger.error(f"An unexpected error occurred while reading file '{file_path}': {e}")
         sys.exit(1)
     return prefs
 
