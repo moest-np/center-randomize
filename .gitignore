@@ -98,7 +98,10 @@ venv_*/
 .nvimrc
 .vimrc
 
+/logs/*
 mypy.ini
+*.DS_Store
+
 # Output Directories
 output
 result

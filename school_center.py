@@ -9,10 +9,17 @@ PREF_CUTOFF = -4 # Do not allocate students with pref score less than cutoff
 import math
 import csv
 import random
+import logging
 import argparse
 import os
 from typing import Dict, List
 
+from utils.custom_logger import configure_logging
+
+
+configure_logging()
+
+logger = logging.getLogger(__name__)
 
 def create_dir(dirPath:str):
     """
@@ -201,11 +208,10 @@ open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
 
         if to_allot > 0: 
             remaining+=to_allot
-            print(f"{to_allot}/{s['count']} left for {s['scode']} {s['name-address']} centers: {len(centers_for_school)}")
+            logger.warn(f"{to_allot}/{s['count']} left for {s['scode']} {s['name-address']} centers: {len(centers_for_school)}")
                 
 
-    print("Remaining capacity at each center (remaining_capacity cscode):")
-    print(sorted([(v,k) for k, v in centers_remaining_cap.items() if v != 0]))
-    print(f"Total remaining capacity across all centers: {sum({k:v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
-    print(f"Students not assigned: {remaining}")
-
+    logger.info("Remaining capacity at each center (remaining_capacity cscode):")
+    logger.info(sorted([(v,k) for k, v in centers_remaining_cap.items() if v != 0]))
+    logger.info(f"Total remaining capacity across all centers: {sum({k:v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
+    logger.info(f"Students not assigned: {remaining}")
