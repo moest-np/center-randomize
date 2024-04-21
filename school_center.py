@@ -208,7 +208,7 @@ open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
 
         if to_allot > 0: 
             remaining+=to_allot
-            print(f"{to_allot}/{s['count']} left for {s['scode']} {s['name-address']} centers: {len(centers_for_school)}")
+            logger.info(f"{to_allot}/{s['count']} left for {s['scode']} {s['name-address']} centers: {len(centers_for_school)}")
                 
 
     logger.info("Remaining capacity at each center (remaining_capacity cscode):")
