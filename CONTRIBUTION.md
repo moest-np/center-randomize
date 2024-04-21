@@ -2,7 +2,7 @@
 
 Thank you for considering contributing to our project! We welcome contributions from everyone. To maintain a positive and collaborative environment, please follow these guidelines:
 
-### Creating Issues:
+### Creating Issues
 
 1. **Search Existing Issues**: Before creating a new issue, please search existing issues to see if the topic has already been discussed or reported.
 
@@ -12,7 +12,7 @@ Thank you for considering contributing to our project! We welcome contributions 
 
 4. **Use Labels**: Use appropriate labels to categorize your issue (e.g., bug, enhancement, documentation, etc.).
 
-### Pull Requests (PRs):
+### Pull Requests (PRs)
 
 1. **Fork the Repository**: Start by forking the repository to your GitHub account.
 
@@ -24,18 +24,18 @@ Thank you for considering contributing to our project! We welcome contributions 
 
 5. **Code Style:** Follow the existing code style and conventions. Ensure proper indentation, variable naming, and commenting.
 
-5. **Test Your Changes**: Ensure that your changes do not break existing functionality. Write test cases to cover your code changes. Ensure that existing tests pass successfully.
+6. **Test Your Changes**: Ensure that your changes do not break existing functionality. Write test cases to cover your code changes. Ensure that existing tests pass successfully.
 
-6. **Commit Your Changes**: Commit your changes. Write clear and meaningful commit messages. Include a brief summary in the first line followed by a more detailed description if necessary.
+7. **Commit Your Changes**: Commit your changes. Write clear and meaningful commit messages. Include a brief summary in the first line followed by a more detailed description if necessary.
 
-7. **Push Changes**: Push your changes to your forked repository.
+8. **Push Changes**: Push your changes to your forked repository.
 
-8. **Submit a Pull Request (PR)**: Once you have pushed your changes, submit a pull request to the main repository. Use a descriptive title for your pull request that summarizes the changes made.
+9. **Submit a Pull Request (PR)**: Once you have pushed your changes, submit a pull request to the main repository. Use a descriptive title for your pull request that summarizes the changes made.
 
-9. **Review Process**: Your PR will be reviewed by project maintainers. Please be patient during the review process and be open to feedback and suggestions.
+10. **Review Process**: Your PR will be reviewed by project maintainers. Please be patient during the review process and be open to feedback and suggestions.
 
-10. **Merge PR**: If your PR is approved, it will be merged into the main repository. Congratulations on your contribution!
+11. **Merge PR**: If your PR is approved, it will be merged into the main repository. Congratulations on your contribution!
 
-11. **Stay Engaged**: Stay engaged with the community, participate in discussions, and consider contributing further.
+12. **Stay Engaged**: Stay engaged with the community, participate in discussions, and consider contributing further.
 
 Thank you for your interest in contributing to our project! Your contributions help make this project better for everyone.
