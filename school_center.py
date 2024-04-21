@@ -558,6 +558,9 @@ if __name__ == "__main__":
         default="school-center.tsv",
         help="Output file",
     )
+    parser.add_argument("--seed", default=None, help="Seed value for randomization")
+
     args = parser.parse_args()
 
+    random.seed(args.seed)
     main(args)
