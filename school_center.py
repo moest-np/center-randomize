@@ -1,11 +1,3 @@
-OUTPUT_DIR = 'results/'
-
-PREF_DISTANCE_THRESHOLD = 2  # Preferred threshold distance in kilometers
-ABS_DISTANCE_THRESHOLD = 7  # Absolute threshold distance in kilometers
-MIN_STUDENT_IN_CENTER = 10  # minimum number of students from a school to be assigned to a center in normal circumstances
-STRETCH_CAPACITY_FACTOR = 0.02  # how much can center capacity be streched if need arises
-PREF_CUTOFF = -4 # Do not allocate students with pref score less than cutoff
-
 import math
 import csv
 import random
@@ -20,6 +12,15 @@ from utils.custom_logger import configure_logging
 configure_logging()
 
 logger = logging.getLogger(__name__)
+from settings import (DISTANCE_TSV, OUTPUT_DIR, 
+                    PREF_DISTANCE_THRESHOLD, 
+                    ABS_DISTANCE_THRESHOLD, 
+                    MIN_STUDENT_IN_CENTER, 
+                    PREF_CUTOFF,
+                    STRETCH_CAPACITY_FACTOR,
+                    PREFS_TSV, SCHOOLS_TSV,
+                    CENTERS_TSV,OUTPUT_TSV,)
+
 
 def create_dir(dirPath:str):
     """
@@ -143,26 +144,16 @@ def is_allocated(scode1: str, scode2:str) -> bool:
     else:
         return False
 
-parser = argparse.ArgumentParser(
-                    prog='center randomizer',
-                    description='Assigns centers to exam centers to students')
-parser.add_argument('schools_tsv', default='schools.tsv', help="Tab separated (TSV) file containing school details")
-parser.add_argument('centers_tsv', default='centers.tsv', help="Tab separated (TSV) file containing center details")
-parser.add_argument('prefs_tsv', default='prefs.tsv', help="Tab separated (TSV) file containing preference scores")
-parser.add_argument('-o', '--output', default='school-center.tsv', help='Output file')
-args = parser.parse_args()
-
-schools = sorted(read_tsv(args.schools_tsv), key= school_sort_key)
-centers = read_tsv(args.centers_tsv)
+schools = sorted(read_tsv(SCHOOLS_TSV), key= school_sort_key)
+centers = read_tsv(CENTERS_TSV)
 centers_remaining_cap = {c['cscode']:int(c['capacity']) for c in centers}
-prefs = read_prefs(args.prefs_tsv)
+prefs = read_prefs(PREFS_TSV)
 
 remaining = 0 # stores count of non allocated students 
 allocations = {}  # to track mutual allocations
-
-create_dir(OUTPUT_DIR) # Create the output directory if not exists
-with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-8') as intermediate_file, \
-open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
+create_dir(OUTPUT_DIR)
+with open(DISTANCE_TSV, 'w', encoding='utf-8') as intermediate_file, \
+open(OUTPUT_TSV, 'w', encoding='utf-8') as a_file:
     writer = csv.writer(intermediate_file, delimiter="\t")
     writer.writerow(["scode", "s_count", "school_name", "school_lat", "school_long", "cscode", "center_name", "center_address", "center_capacity", "distance_km"])
     
