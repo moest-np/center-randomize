@@ -133,7 +133,7 @@ def is_allocated(scode1: str, scode2:str) -> bool:
         return allocations[scode1].get(scode2) != None
     else:
         return False
-    # check if the file exists
+
 def validate_school_file(file_path: str) -> bool:
     '''
     validating the format of the school input file
@@ -146,8 +146,8 @@ def validate_school_file(file_path: str) -> bool:
     with open(file_path, 'r', newline='', encoding='utf-8') as file:
         header = file.readline().strip().split('\t')
         required_columns = ['scode', 'count', 'name-address', 'lat', 'long']
-        if header != required_columns:
-            print(f"Invalid school file format. Expected columns: {required_columns}")
+        if not all(col in header for col in required_columns):
+            print(f"Invalid school file format. Required columns: {required_columns}")
             return False
         
     return True
@@ -165,8 +165,8 @@ def validate_center_file(file_path: str) -> bool:
         header = file.readline().strip().split('\t')
         required_columns = ['cscode', 'capacity', 'name', 'address', 'lat', 'long']
         # compare the header with required columns
-        if header != required_columns:
-            print(f"Invalid center file format. Expected columns: {required_columns}")
+        if not all(col in header for col in required_columns):
+            print(f"Invalid center file format. Required columns: {required_columns}")
             return False
         
     return True
@@ -185,8 +185,8 @@ def validate_preference_file(file_path: str) -> bool:
         header = file.readline().strip().split('\t')
         required_columns = ['scode', 'cscode', 'pref', 'reason']
         # compare the header with required columns
-        if header != required_columns:
-            print(f"Invalid preference file format. Expected columns: {required_columns}")
+        if not all(col in header for col in required_columns):
+            print(f"Invalid preference file format. Required columns: {required_columns}")
             return False
         
     return True
@@ -284,4 +284,3 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
     print(
         f"Total remaining capacity across all centers: {sum({k: v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
     print(f"Students not assigned: {remaining}")
-
