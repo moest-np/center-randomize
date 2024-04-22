@@ -200,12 +200,25 @@ create_dir(OUTPUT_DIR)  # Create the output directory if not exists
 with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-8') as intermediate_file, \
         open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
     writer = csv.writer(intermediate_file, delimiter="\t")
-    writer.writerow(["scode", "s_count", "school_name", "school_lat", "school_long",
-                    "cscode", "center_name", "center_address", "center_capacity", "distance_km"])
+    writer.writerow(["scode", 
+                     "s_count", 
+                     "school_name", 
+                     "school_lat", 
+                     "school_long",
+                     "cscode", 
+                     "center_name", 
+                     "center_address", 
+                     "center_capacity", 
+                     "distance_km"])
 
     allocation_file = csv.writer(a_file, delimiter='\t')
-    allocation_file.writerow(
-        ["scode", "school", "cscode", "center", "center_address", "allocation", "distance_km"])
+    allocation_file.writerow(["scode", 
+                              "school", 
+                              "cscode", 
+                              "center", 
+                              "center_address", 
+                              "allocation", 
+                              "distance_km"])
 
     for s in schools:
         centers_for_school = centers_within_distance(
@@ -217,8 +230,16 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
 
         # per_center = math.ceil(to_allot / min(calc_num_centers(to_allot), len(centers_for_school)))
         for c in centers_for_school:
-            writer.writerow([s['scode'], s['count'], s['name-address'], s['lat'], s['long'],
-                            c['cscode'], c['name'], c['address'], c['capacity'], c['distance_km']])
+            writer.writerow([s['scode'], 
+                             s['count'], 
+                             s['name-address'], 
+                             s['lat'], 
+                             s['long'],
+                             c['cscode'], 
+                             c['name'], 
+                             c['address'], 
+                             c['capacity'], 
+                             c['distance_km']])
             if is_allocated(c['cscode'], s['scode']):
                 continue
             next_allot = min(to_allot, per_center, max(
@@ -248,8 +269,13 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
                     centers_remaining_cap[c['cscode']] -= next_allot
 
         for c in allocated_centers.values():
-            allocation_file.writerow([s['scode'], s['name-address'], c['cscode'], c['name'],
-                                     c['address'], allocations[s['scode']][c['cscode']], c['distance_km']])
+            allocation_file.writerow([s['scode'], 
+                                      s['name-address'], 
+                                      c['cscode'], 
+                                      c['name'],
+                                      c['address'], 
+                                      allocations[s['scode']][c['cscode']], 
+                                      c['distance_km']])
 
         if to_allot > 0:
             remaining += to_allot
