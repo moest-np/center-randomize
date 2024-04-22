@@ -1,4 +1,4 @@
-OUTPUT_DIR = 'results/'
+DEFAULT_OUTPUT_DIR = 'results'
 
 PREF_DISTANCE_THRESHOLD = 2  # Preferred threshold distance in kilometers
 ABS_DISTANCE_THRESHOLD = 7  # Absolute threshold distance in kilometers
@@ -11,7 +11,7 @@ import csv
 import random
 import logging
 import argparse
-import os
+from os import path, makedirs
 from typing import Dict, List
 
 from utils.custom_logger import configure_logging
@@ -21,13 +21,6 @@ configure_logging()
 
 logger = logging.getLogger(__name__)
 
-def create_dir(dirPath:str):
-    """
-    Create the given directory if it doesn't exists
-    - Creates all the directories needed to resolve to the provided directory path
-    """
-    if not os.path.exists(dirPath):
-        os.makedirs(dirPath)
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
@@ -160,9 +153,24 @@ prefs = read_prefs(args.prefs_tsv)
 remaining = 0 # stores count of non allocated students 
 allocations = {}  # to track mutual allocations
 
-create_dir(OUTPUT_DIR) # Create the output directory if not exists
-with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-8') as intermediate_file, \
-open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
+
+def get_output_dir():
+    dirname = path.dirname(args.output)
+    if(dirname):
+        return dirname
+    else:
+        return DEFAULT_OUTPUT_DIR
+
+def get_output_filename():
+    return path.basename(args.output)
+
+
+output_dirname = get_output_dir()
+output_filename = get_output_filename()
+makedirs(output_dirname, exist_ok=True) # Create the output directory if not exists
+
+with open(path.join(output_dirname, "school-center-distance.tsv"), 'w', encoding='utf-8') as intermediate_file, \
+open(path.join(output_dirname, 'output_filename'), 'w', encoding='utf-8') as a_file:
     writer = csv.writer(intermediate_file, delimiter="\t")
     writer.writerow(["scode", "s_count", "school_name", "school_lat", "school_long", "cscode", "center_name", "center_address", "center_capacity", "distance_km"])
     
