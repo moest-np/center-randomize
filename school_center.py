@@ -142,6 +142,58 @@ def is_allocated(scode1: str, scode2:str) -> bool:
         return allocations[scode1].get(scode2) != None
     else:
         return False
+    
+# validating the format of the school input file
+def validate_school_file(file_path: str) -> bool:
+
+    if not os.path.exists(file_path):
+        print(f"School file '{file_path}' not found.")
+        return False
+    
+    # open the file and read the header
+    with open(file_path, 'r', newline='', encoding='utf-8') as file:
+        header = file.readline().strip().split('\t')
+        required_columns = ['scode', 'count', 'name-address', 'lat', 'long']
+        if not all(col in header for col in required_columns):
+            print(f"Invalid school file format. Required columns: {required_columns}")
+            return False
+        
+    return True
+
+# validating the format of the center input file
+def validate_center_file(file_path: str) -> bool:
+    # check if file exists
+    if not os.path.exists(file_path):
+        print(f"Center file '{file_path}' not found.")
+        return False
+    # open files and read header
+    with open(file_path, 'r', newline='', encoding='utf-8') as file:
+        header = file.readline().strip().split('\t')
+        required_columns = ['cscode', 'capacity', 'name', 'address', 'lat', 'long']
+        # compare the header with required columns
+        if not all(col in header for col in required_columns):
+            print(f"Invalid center file format. Required columns: {required_columns}")
+            return False
+        
+    return True
+
+# validating the format of the preference input file
+def validate_preference_file(file_path: str) -> bool:
+    # check if the file exists
+    if not os.path.exists(file_path):
+        print(f"Preference file '{file_path}' not found.")
+        return False
+    
+    # open the file and read the header
+    with open(file_path, 'r', newline='', encoding='utf-8') as file:
+        header = file.readline().strip().split('\t')
+        required_columns = ['scode', 'cscode', 'pref', 'reason']
+        # compare the header with required columns
+        if not all(col in header for col in required_columns):
+            print(f"Invalid preference file format. Required columns: {required_columns}")
+            return False
+        
+    return True
 
 parser = argparse.ArgumentParser(
                     prog='center randomizer',
