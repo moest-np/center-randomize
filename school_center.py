@@ -68,7 +68,7 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
         return []
     
     within_distance = []
-    nearest_distance = None;
+    nearest_distance = None
     nearest_center = None
     for c in centers: 
         distance = haversine_distance(float(school_lat), float(school_long), float(c.get('lat')), float(c.get('long')))
