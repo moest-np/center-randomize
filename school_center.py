@@ -59,7 +59,7 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
     
     def sort_key(c):
         # intent: sort by preference score DESC then by distance_km ASC 
-        # leaky abstraction - sorted requires a single numberic value for each element
+        # leaky abstraction - sorted requires a single numeric value for each element
         return c['distance_km'] * random.uniform(1,5) - get_pref(school['scode'], c['cscode'])*100
     
     school_lat = school.get('lat')
