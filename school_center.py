@@ -178,6 +178,52 @@ def is_allocated(scode1: str, scode2: str) -> bool:
     return allocations.get(scode1, {}).get(scode2) is not None
 
 
+def allocate_to_centers(centers: List[Dict[str, str]], school: Dict[str, str], to_allot: int, remaining_cap: Dict[str, int], stretch: bool=False):
+    allocated_centers = {}
+    per_center = calc_per_center(to_allot)
+    
+    for center in centers:
+        school_code = school['scode']
+        center_code = center['cscode']
+        writer.writerow([
+            school_code, 
+            school['count'], 
+            school['name-address'], 
+            school['lat'], 
+            school['long'], 
+            center_code, 
+            center['name'], 
+            center['address'], 
+            center['capacity'], 
+            center['distance_km']
+        ])
+
+        if is_allocated(center_code, school_code):
+            continue
+
+        centers_cap_left = remaining_cap[center_code]
+
+        if stretch:
+            stretched_capacity = math.floor(int(center['capacity']) * STRETCH_CAPACITY_FACTOR + centers_cap_left)
+            next_allot = min(to_allot, max(stretched_capacity, MIN_STUDENT_IN_CENTER))
+            centers_cap_left = stretched_capacity
+        else:
+            next_allot = min(to_allot, per_center, max(centers_cap_left, MIN_STUDENT_IN_CENTER))
+        
+        if to_allot > 0 and next_allot > 0 and centers_cap_left >= next_allot:
+            if next_allot < MIN_STUDENT_IN_CENTER and len(allocated_centers) > 0:
+                # get the first center code
+                allocate_center_code = centers[0]['cscode']
+            else:
+                allocate_center_code = center_code
+                allocated_centers[allocate_center_code] = center
+
+            allocate(school_code, allocate_center_code, next_allot)
+            to_allot -= next_allot
+            remaining_cap[center_code] -= next_allot
+
+    return to_allot, allocated_centers
+
 parser = argparse.ArgumentParser(
     prog='center randomizer',
     description='Assigns centers to exam centers to students')
@@ -234,49 +280,13 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
         centers_for_school = centers_within_distance(
             s, centers, PREF_DISTANCE_THRESHOLD)
         to_allot = int(s['count'])
-        per_center = calc_per_center(to_allot)
 
-        allocated_centers = {}
-
-        # per_center = math.ceil(to_allot / min(calc_num_centers(to_allot), len(centers_for_school)))
-        for c in centers_for_school:
-            writer.writerow([s['scode'], 
-                             s['count'], 
-                             s['name-address'], 
-                             s['lat'], 
-                             s['long'],
-                             c['cscode'], 
-                             c['name'], 
-                             c['address'], 
-                             c['capacity'], 
-                             c['distance_km']])
-            if is_allocated(c['cscode'], s['scode']):
-                continue
-            next_allot = min(to_allot, per_center, max(
-                centers_remaining_cap[c['cscode']], MIN_STUDENT_IN_CENTER))
-            if to_allot > 0 and next_allot > 0 and centers_remaining_cap[c['cscode']] >= next_allot:
-                allocated_centers[c['cscode']] = c
-                allocate(s['scode'], c['cscode'], next_allot)
-                # allocation.writerow([s['scode'], s['name-address'], c['cscode'], c['name'], c['address'], next_allot, c['distance_km']])
-                to_allot -= next_allot
-                centers_remaining_cap[c['cscode']] -= next_allot
-
-        if to_allot > 0:  # try again with relaxed constraints and more capacity at centers
-            expanded_centers = centers_within_distance(
-                s, centers, ABS_DISTANCE_THRESHOLD)
-            for c in expanded_centers:
-                if is_allocated(c['cscode'], s['scode']):
-                    continue
-                stretched_capacity = math.floor(
-                    int(c['capacity']) * STRETCH_CAPACITY_FACTOR + centers_remaining_cap[c['cscode']])
-                next_allot = min(to_allot, max(
-                    stretched_capacity, MIN_STUDENT_IN_CENTER))
-                if to_allot > 0 and next_allot > 0 and stretched_capacity >= next_allot:
-                    allocated_centers[c['cscode']] = c
-                    allocate(s['scode'], c['cscode'], next_allot)
-                    # allocation.writerow([s['scode'], s['name-address'], c['cscode'], c['name'], c['address'], next_allot, c['distance_km']])
-                    to_allot -= next_allot
-                    centers_remaining_cap[c['cscode']] -= next_allot
+        # per_center = math.ceil(to_allot / min(calc_num_centers(to_allot), len(centers_for_school))) 
+        to_allot, allocated_centers = allocate_to_centers(centers_for_school, s, to_allot, centers_remaining_cap)
+        
+        if to_allot > 0: # try again with relaxed constraints and more capacity at centers 
+            expanded_centers = centers_within_distance(s, centers, ABS_DISTANCE_THRESHOLD)
+            to_allot, allocated_centers = allocate_to_centers(expanded_centers, s, to_allot, centers_remaining_cap, stretch_capacity=True)
 
         for c in allocated_centers.values():
             allocation_file.writerow([s['scode'], 
