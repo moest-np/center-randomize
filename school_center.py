@@ -283,10 +283,15 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
 
         # per_center = math.ceil(to_allot / min(calc_num_centers(to_allot), len(centers_for_school))) 
         to_allot, allocated_centers = allocate_to_centers(centers_for_school, s, to_allot, centers_remaining_cap)
+
+        if int(s['scode']) == 27159:
+            logger.info('FOR 27159:::::::')
+            logger.info(to_allot)
+            logger.info(allocated_centers)
         
         if to_allot > 0: # try again with relaxed constraints and more capacity at centers 
             expanded_centers = centers_within_distance(s, centers, ABS_DISTANCE_THRESHOLD)
-            to_allot, allocated_centers = allocate_to_centers(expanded_centers, s, to_allot, centers_remaining_cap, stretch_capacity=True)
+            to_allot, allocated_centers = allocate_to_centers(expanded_centers, s, to_allot, centers_remaining_cap, stretch=True)
 
         for c in allocated_centers.values():
             allocation_file.writerow([s['scode'], 
