@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "center-randomize"
+version = "0.1.0"
+description = ""
+authors = ["Manisha Bhandari <manishabhandari841@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ruff = "^0.4.1"
+pytest = "8.0.2"
+pytest-clarity = "1.0.1"
+pytest-sugar = "1.0.0"
+pre-commit = "3.6.0"
+pytest-cov = "5.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
