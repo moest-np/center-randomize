@@ -1,12 +1,11 @@
 import math
-import csv
 import random
 import logging
 import argparse
 from typing import Dict, List
 
 from utils.custom_logger import configure_logging
-from utils.constants import EARTH_RADIUS, OUTPUT_DIR,PREF_DISTANCE_THRESHOLD,ABS_DISTANCE_THRESHOLD,MIN_STUDENT_IN_CENTER,STRETCH_CAPACITY_FACTOR,PREF_CUTOFF
+from utils.constants import CENTER_DISTANCE_OUTPUT_FILE, EARTH_RADIUS, OUTPUT_DIR,PREF_DISTANCE_THRESHOLD,ABS_DISTANCE_THRESHOLD,MIN_STUDENT_IN_CENTER,STRETCH_CAPACITY_FACTOR,PREF_CUTOFF
 from utils.file_utils import FileUtils;
 class CentersAllocation:
     
@@ -127,12 +126,12 @@ class CentersAllocation:
         remaining = 0 # stores count of non allocated students 
 
         self.fileUtils.create_dir(OUTPUT_DIR) # Create the output directory if not exists
-        with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-8') as intermediate_file, \
-        open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
-            writer = csv.writer(intermediate_file, delimiter="\t")
+        with self.fileUtils.openOutputFiles(CENTER_DISTANCE_OUTPUT_FILE,OUTPUT_DIR) as intermediate_file, \
+        self.fileUtils.openOutputFiles(args.output,OUTPUT_DIR) as a_file:
+            writer = self.fileUtils.get_csv_writer(intermediate_file,delimiter='\t')
             writer.writerow(["scode", "s_count", "school_name", "school_lat", "school_long", "cscode", "center_name", "center_address", "center_capacity", "distance_km"])
             
-            allocation_file = csv.writer(a_file, delimiter='\t')
+            allocation_file = self.fileUtils.get_csv_writer(a_file, delimiter='\t')
             allocation_file.writerow(["scode", "school", "cscode", "center", "center_address", "allocation", "distance_km"])
             
             for s in schools:

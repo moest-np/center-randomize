@@ -1,4 +1,5 @@
 OUTPUT_DIR = 'results/'
+CENTER_DISTANCE_OUTPUT_FILE = 'school-center-distance.tsv'
 
 PREF_DISTANCE_THRESHOLD = 2  # Preferred threshold distance in kilometers
 ABS_DISTANCE_THRESHOLD = 7  # Absolute threshold distance in kilometers

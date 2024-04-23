@@ -3,6 +3,8 @@ import csv
 import os
 from typing import Dict, List
 
+from utils.constants import CENTER_DISTANCE_OUTPUT_FILE, OUTPUT_DIR
+
 class FileUtils():
 
     """
@@ -35,3 +37,9 @@ class FileUtils():
                     prefs[row['scode']] = {row['cscode']: int(row['pref'])}
 
         return prefs
+
+    def openOutputFiles(self,output_file:str,directory:str):
+        return open(('{}'+output_file).format(directory), 'w', encoding='utf-8')
+
+    def get_csv_writer(self,file,delimiter:str):
+        return csv.writer(file,dialect='excel', delimiter=delimiter)
