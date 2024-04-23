@@ -75,3 +75,21 @@ Console output contains information about center allocation run.
     Total remaining capacity across all centers: 190
     Students not assigned: 29
 
+
+## Usage
+
+To run the `school_center.py` script, follow these steps:
+
+1. Make sure you have Python installed on your system.
+
+2. Navigate to the directory containing the script in your terminal or command prompt.
+
+3. Run the script with the following command:
+
+    python school_center.py sample_data/schools_grade12_2081.tsv sample_data/centers_grade12_2081.tsv sample_data/prefs.tsv -o output_file_name.tsv
+
+    - Replace `sample_data/schools_grade12_2081.tsv`, `sample_data/centers_grade12_2081.tsv`, and `sample_data/prefs.tsv` with the paths to your input data files.
+    - Replace `output_file_name.tsv` with the desired name for the output file.
+
+4. After the script finishes execution, you will find the output file in the same directory, named according to the `-o` parameter you provided.
+
