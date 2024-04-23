@@ -153,8 +153,27 @@ parser.add_argument('-o', '--output', default='school-center.tsv', help='Output 
 parser.add_argument('-s', '--seed', action='store', metavar='SEEDVALUE', default=None, type=float, help='Initialization seed for Random Number Generator')
 
 args = parser.parse_args()
-
 random = random.Random(args.seed) #overwrites the random module to use seeded rng
+
+# Nirmala, Date: 23'April'24: If Directory and fileName is provided as argument then this logic will handle and in case if it is 
+# not provided then it works in the same way as it was working previously in which default files is created inside results directory(i.e. default directory)
+# set at the top.
+if args.output != parser.get_default('output'):
+  # Tuple Unpacking to separate Directory and Filename
+  output_dir, output_filename = os.path.split(args.output)
+  if output_dir is not None:
+   OUTPUT_DIR = output_dir
+
+ # Combine the directory and filename to ensure the file is created within the directory
+  output_file_path = os.path.join(OUTPUT_DIR, output_filename)
+else:
+ output_file_path = os.path.join(OUTPUT_DIR, args.output)
+intermediate_file_path = os.path.join(OUTPUT_DIR, 'school-center-distance.tsv')
+ 
+# Create Directory if specified Directory has not been created 
+if OUTPUT_DIR and not os.path.exists(OUTPUT_DIR):
+    os.makedirs(OUTPUT_DIR)
+
 
 schools = sorted(read_tsv(args.schools_tsv), key= school_sort_key)
 centers = read_tsv(args.centers_tsv)
@@ -164,9 +183,9 @@ prefs = read_prefs(args.prefs_tsv)
 remaining = 0 # stores count of non allocated students 
 allocations = {}  # to track mutual allocations
 
-create_dir(OUTPUT_DIR) # Create the output directory if not exists
-with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-8') as intermediate_file, \
-open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
+#create_dir(OUTPUT_DIR) # Create the output directory if not exists 
+with open(intermediate_file_path, 'w', encoding='utf-8') as intermediate_file, \
+open(output_file_path, 'w', encoding='utf-8') as a_file:
     writer = csv.writer(intermediate_file, delimiter="\t")
     writer.writerow(["scode", "s_count", "school_name", "school_lat", "school_long", "cscode", "center_name", "center_address", "center_capacity", "distance_km"])
     
