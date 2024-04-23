@@ -65,7 +65,7 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
 
     def sort_key(c):
         # intent: sort by preference score DESC then by distance_km ASC
-        # leaky abstraction - sorted requires a single numberic value for each element
+        # leaky abstraction - sorted requires a single numeric value for each element
         return c['distance_km'] * random.uniform(1, 5) - get_pref(school['scode'], c['cscode'])*100
 
     school_lat = school.get('lat')
@@ -97,7 +97,7 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
 def read_tsv(file_path: str) -> List[Dict[str, str]]:
     """
     Function to read the tsv file for school.tsv and centers.tsv
-    Return a list of dicts.
+    Return a list of schools/centers as dicts.
     """
     data = []
     with open(file_path, 'r', newline='', encoding='utf-8') as file:
@@ -110,7 +110,7 @@ def read_tsv(file_path: str) -> List[Dict[str, str]]:
 def read_prefs(file_path: str) -> Dict[str, Dict[str, int]]:
     """
     Read the tsv file for pref.tsv
-    Return a dict of dicts
+    Return a dict of dicts key scode and then cscode
     """
     prefs = {}
     with open(file_path, 'r', newline='', encoding='utf-8') as file:
@@ -143,13 +143,19 @@ def get_pref(scode, cscode) -> int:
 
 def calc_per_center(count: int) -> int:
     """
-    Return the number of students that can be allocated to a center.
+    Return the number of students that can be allocated to a center based on student count.
     """
-    return 200 if count > 400 else 100
+    if count <= 400:
+        return 100
+    # elif count <= 900:
+    #     return 200
+    else: 
+        return 200
 
 
 def school_sort_key(s):
-    # intent: sort by preference score DESC order then by count ASC order
+    # intent: allocate students from schools with large students count first
+    # to avoid excessive fragmentation
     return (-1 if int(s['count']) > 500 else 1) * random.uniform(1, 100)
 
 
@@ -183,14 +189,19 @@ parser.add_argument('prefs_tsv', default='prefs.tsv',
                     help="Tab separated (TSV) file containing preference scores")
 parser.add_argument(
     '-o', '--output', default='school-center.tsv', help='Output file')
+parser.add_argument('-s', '--seed', action='store', metavar='SEEDVALUE',
+                     default=None, type=float, 
+                     help='Initialization seed for Random Number Generator')
+
 args = parser.parse_args()
+
+random = random.Random(args.seed) #overwrites the random module to use seeded rng
 
 # Parse the inputs from argparse
 schools = sorted(read_tsv(args.schools_tsv), key=school_sort_key)
 centers = read_tsv(args.centers_tsv)
 centers_remaining_cap = {c['cscode']: int(c['capacity']) for c in centers}
 prefs = read_prefs(args.prefs_tsv)
-
 
 remaining = 0       # stores count of non allocated students
 allocations = {}    # to track mutual allocations
