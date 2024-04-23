@@ -150,7 +150,11 @@ parser.add_argument('schools_tsv', default='schools.tsv', help="Tab separated (T
 parser.add_argument('centers_tsv', default='centers.tsv', help="Tab separated (TSV) file containing center details")
 parser.add_argument('prefs_tsv', default='prefs.tsv', help="Tab separated (TSV) file containing preference scores")
 parser.add_argument('-o', '--output', default='school-center.tsv', help='Output file')
+parser.add_argument('-s', '--seed', action='store', metavar='SEEDVALUE', default=None, type=float, help='Initialization seed for Random Number Generator')
+
 args = parser.parse_args()
+
+random = random.Random(args.seed) #overwrites the random module to use seeded rng
 
 schools = sorted(read_tsv(args.schools_tsv), key= school_sort_key)
 centers = read_tsv(args.centers_tsv)
