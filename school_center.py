@@ -181,5 +181,5 @@ class CentersAllocation:
             self.logger.info(f"Total remaining capacity across all centers: {sum({k:v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
             self.logger.info(f"Students not assigned: {remaining}")
 
-randomize = CentersAllocation()
-randomize.start_allocation()
+centersAllocation = CentersAllocation()
+centersAllocation.start_allocation()
