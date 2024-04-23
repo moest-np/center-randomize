@@ -13,7 +13,9 @@ import logging
 import argparse
 import os
 from typing import Dict, List
+from pprint import pprint
 
+from utils.utils import filter_dict_with_non_zero_values, sort_dict_by_value
 from utils.custom_logger import configure_logging
 
 
@@ -216,6 +218,13 @@ open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
                 
 
     logger.info("Remaining capacity at each center (remaining_capacity cscode):")
-    logger.info(sorted([(v,k) for k, v in centers_remaining_cap.items() if v != 0]))
-    logger.info(f"Total remaining capacity across all centers: {sum({k:v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
+    remaining_capacity_data=sort_dict_by_value(filter_dict_with_non_zero_values(centers_remaining_cap))
+    vacent_seat_data=[]
+    for cscode, remaining_seat in remaining_capacity_data.items():
+        school=next(filter(lambda x: x['cscode']==cscode, centers))
+        school_name=school["name"]
+        vacent_seat_data.append({"cscode":cscode, "remaining_capacity":remaining_seat, "school":school_name})
+    pprint(vacent_seat_data)
+    logger.info(f"Total remaining capacity across all centers: {sum(centers_remaining_cap.values())}")
     logger.info(f"Students not assigned: {remaining}")
+
