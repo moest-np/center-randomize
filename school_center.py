@@ -197,8 +197,7 @@ args = parser.parse_args()
 
 random = random.Random(args.seed) #overwrites the random module to use seeded rng
 
-# Parse the inputs from argparse
-schools = sorted(read_tsv(args.schools_tsv), key=school_sort_key)
+schools = sorted(read_tsv(args.schools_tsv), key= school_sort_key)
 centers = read_tsv(args.centers_tsv)
 centers_remaining_cap = {c['cscode']: int(c['capacity']) for c in centers}
 prefs = read_prefs(args.prefs_tsv)
