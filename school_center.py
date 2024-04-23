@@ -59,7 +59,7 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
     
     def sort_key(c):
         # intent: sort by preference score DESC then by distance_km ASC 
-        # leaky abstraction - sorted requires a single numberic value for each element
+        # leaky abstraction - sorted requires a single numeric value for each element
         return c['distance_km'] * random.uniform(1,5) - get_pref(school['scode'], c['cscode'])*100
     
     school_lat = school.get('lat')
@@ -68,7 +68,7 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
         return []
     
     within_distance = []
-    nearest_distance = None;
+    nearest_distance = None
     nearest_center = None
     for c in centers: 
         distance = haversine_distance(float(school_lat), float(school_long), float(c.get('lat')), float(c.get('long')))
@@ -143,6 +143,13 @@ def is_allocated(scode1: str, scode2:str) -> bool:
     else:
         return False
 
+def update_output_path(filename):
+    split_path = filename.split("/")
+    if split_path[-1].endswith(".tsv"):
+        filename = split_path[-1]
+        output_dir = "/".join(split_path[:-1]) + "/"
+    return filename, output_dir
+
 parser = argparse.ArgumentParser(
                     prog='center randomizer',
                     description='Assigns centers to exam centers to students')
@@ -164,9 +171,16 @@ prefs = read_prefs(args.prefs_tsv)
 remaining = 0 # stores count of non allocated students 
 allocations = {}  # to track mutual allocations
 
+if (len(args.output.split("/")) > 1):
+    file_path, mod_output_dir = update_output_path(args.output)
+    OUTPUT_DIR += mod_output_dir
+    output_file_path = OUTPUT_DIR + file_path
+else:
+    output_file_path = OUTPUT_DIR + args.output
+
 create_dir(OUTPUT_DIR) # Create the output directory if not exists
 with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-8') as intermediate_file, \
-open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
+open(output_file_path, 'w', encoding='utf-8') as a_file:
     writer = csv.writer(intermediate_file, delimiter="\t")
     writer.writerow(["scode", "s_count", "school_name", "school_lat", "school_long", "cscode", "center_name", "center_address", "center_capacity", "distance_km"])
     
