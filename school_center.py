@@ -58,9 +58,7 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
         return {'cscode': c['cscode'], 'name': c['name'], 'address': c['address'], 'capacity': c['capacity'], 'lat': c['lat'], 'long': c['long'], 'distance_km': distance}
     
     def sort_key(c):
-        # intent: sort by preference score DESC then by distance_km ASC 
-        # leaky abstraction - sorted requires a single numberic value for each element
-        return c['distance_km'] * random.uniform(1,5) - get_pref(school['scode'], c['cscode'])*100
+        return c['distance_km'] * random.uniform(1, 5) - get_pref(school['scode'], c['cscode']) * 100
     
     school_lat = school.get('lat')
     school_long = school.get('long')
@@ -68,13 +66,13 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
         return []
     
     within_distance = []
-    nearest_distance = None;
+    nearest_distance = None
     nearest_center = None
     for c in centers: 
         distance = haversine_distance(float(school_lat), float(school_long), float(c.get('lat')), float(c.get('long')))
         if school['scode'] == c['cscode']:
             continue
-        if nearest_center == None or distance < nearest_distance:
+        if nearest_center is None or distance < nearest_distance:
             nearest_center = c
             nearest_distance = distance
 
@@ -83,8 +81,30 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
             
     if len(within_distance) > 0:
         return sorted(within_distance, key=sort_key) 
-    else: # if there are no centers within given  threshold, return one that is closest
-        return [center_to_dict(nearest_center, nearest_distance)]
+    else: 
+    
+         # Get all centers with their distances from the school
+        all_centers_with_distance = [
+         center_to_dict(c, haversine_distance(float(school_lat), float(school_long), float(c.get('lat')), float(c.get('long'))))
+         for c in centers
+         if school['scode'] != c['cscode']
+        ]
+
+         # Filter centers based on preference cutoff
+        qualified_centers = [
+         center for center in all_centers_with_distance
+         if get_pref(school['scode'], center['cscode']) > PREF_CUTOFF
+        ]
+
+         # If qualified centers are found, sort them by preference score and return
+        if qualified_centers:
+         sorted_centers = sorted(qualified_centers, key=sort_key)
+         return sorted_centers
+        else:
+         # If no qualified centers, return the nearest center
+         return [center_to_dict(nearest_center, nearest_distance)]
+
+
 
 def read_tsv(file_path: str) -> List[Dict[str, str]]:
     data = []
