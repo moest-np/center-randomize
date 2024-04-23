@@ -19,6 +19,7 @@ class CentersAllocation:
         """
         Calculate the great circle distance between two points
         on the earth specified in decimal degrees
+        - Reference: https://en.wikipedia.org/wiki/Haversine_formula
         """
         # Convert decimal degrees to radians
         lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
@@ -53,7 +54,7 @@ class CentersAllocation:
             return []
         
         within_distance = []
-        nearest_distance = None;
+        nearest_distance = None
         nearest_center = None
         for c in centers: 
             distance = self.haversine_distance(float(school_lat), float(school_long), float(c.get('lat')), float(c.get('long')))
@@ -72,6 +73,10 @@ class CentersAllocation:
             return [center_to_dict(nearest_center, nearest_distance)]
 
     def get_pref(self,scode, cscode) -> int:
+        """
+        Read the tsv file for pref.tsv
+        Return a dict of dicts key scode and then cscode
+        """
         if self.prefs.get(scode):
             if self.prefs[scode].get(cscode):
                 return self.prefs[scode][cscode]
@@ -81,6 +86,9 @@ class CentersAllocation:
             return 0 
 
     def calc_per_center(self,count: int) -> int: 
+        """
+        Return the number of students that can be allocated to a center based on student count.
+        """
         if count <= 400:
             return 100
         # elif count <= 900:
@@ -92,18 +100,21 @@ class CentersAllocation:
         return (-1 if int(s['count']) > 500 else 1 ) * random.uniform(1, 100)
 
     def allocate(self,scode:str, cscode:str, count: int):
-        if self.allocations.get(scode) == None:
+        """
+        Allocate the given number of students to the given center.
+        """
+        if scode not in self.allocations:
             self.allocations[scode] = {cscode: count}
-        elif self.allocations[scode].get(cscode) == None:
+        elif cscode not in self.allocations[scode]:
             self.allocations[scode][cscode] = count
         else:
             self.allocations[scode][cscode] += count
 
     def is_allocated(self,scode1: str, scode2:str) -> bool:
-        if self.allocations.get(scode1):
-            return self.allocations[scode1].get(scode2) != None
-        else:
-            return False
+        """
+        Return true if the given school has been allocated to the given center.
+        """
+        return self.allocations.get(scode1, {}).get(scode2) is not None
 
     def start_allocation(self):
         parser = argparse.ArgumentParser(prog='center randomizer',description='Assigns centers to exam centers to students')
