@@ -92,3 +92,4 @@ To run the `school_center.py` script, follow these steps:
     - Replace `output_file_name.tsv` with the desired name for the output file.
 
 4. After the script finishes execution, you will find the output file in the same directory, named according to the `-o` parameter you provided.
+
