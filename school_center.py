@@ -3,7 +3,7 @@ OUTPUT_DIR = 'results/'
 PREF_DISTANCE_THRESHOLD = 2  # Preferred threshold distance in kilometers
 ABS_DISTANCE_THRESHOLD = 7  # Absolute threshold distance in kilometers
 MIN_STUDENT_IN_CENTER = 10  # minimum number of students from a school to be assigned to a center in normal circumstances
-STRETCH_CAPACITY_FACTOR = 0.02  # how much can center capacity be streched if need arises
+STRETCH_CAPACITY_FACTOR = 0.02  # how much can center capacity be stretched if need arises
 PREF_CUTOFF = -4 # Do not allocate students with pref score less than cutoff
 
 import math
@@ -83,7 +83,7 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
             
     if len(within_distance) > 0:
         return sorted(within_distance, key=sort_key) 
-    else: # if there are no centers within given  threshold, return one that is closest
+    else: # if there are no centers within given threshold, return one that is closest
         return [center_to_dict(nearest_center, nearest_distance)]
 
 def read_tsv(file_path: str) -> List[Dict[str, str]]:
