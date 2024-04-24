@@ -23,15 +23,15 @@ LOGGING_CONFIG: dict = {
     "version": 1,
     "formatters": {
         "standard": {
-            "datefmt": "%y-%m-%d %H:%M:%S",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
             "format": "🚀 %(asctime)s - %(name)s - %(levelname)s - %(message)s \n",
         },
         "warn": {
-            "datefmt": "%y-%m-%d %H:%M:%S",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
             "format": "🔔 %(asctime)s - %(name)s - %(levelname)s - %(message)s \n",
         },
         "error": {
-            "datefmt": "%y-%m-%d %H:%M:%S",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
             "format": "❌ %(asctime)s - %(name)s - %(levelname)s - %(message)s \n",
         },
     },
