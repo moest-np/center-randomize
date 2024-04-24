@@ -1,6 +1,6 @@
 from utils.custom_logger import configure_logging
 from typing import Dict, List
-import os
+from os import path, makedirs
 import argparse
 import logging
 import random
@@ -13,6 +13,7 @@ ABS_DISTANCE_THRESHOLD = 7      # Absolute threshold distance in km
 MIN_STUDENT_IN_CENTER = 10      # Min. no of students from a school to be assigned to a center in normal circumstances
 STRETCH_CAPACITY_FACTOR = 0.02  # How much can center capacity be streched if need arises
 PREF_CUTOFF = -4                # Do not allocate students with pref score less than cutoff
+DEFAULT_OUTPUT_DIR = 'results'  # Default directory to create output files if --output not provided
 
 configure_logging()
 logger = logging.getLogger(__name__)
