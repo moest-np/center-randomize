@@ -89,3 +89,12 @@ python3 school_center.py sample_data/schools_grade12_2081.tsv sample_data/center
 
 🚀 24-04-22 20:40:27 - __main__ - INFO - Students not assigned: 0
 ```
+
+### Steps to use Docker
+
+For example , we can take Tag=1
+
+```shell
+docker build -t school-centre:<Tag> .
+docker run -itd -p 8501:8501 school-centre:<Tag>
+```
