@@ -1,11 +1,12 @@
 from utils.custom_logger import configure_logging
 from typing import Dict, List
+import logging
 import os
 import argparse
-import logging
 import random
 import csv
 import math
+from utils import check_duplicate
 
 # Parameters
 PREF_DISTANCE_THRESHOLD = 2     # Preferred threshold distance in km
@@ -16,7 +17,6 @@ PREF_CUTOFF = -4                # Do not allocate students with pref score less 
 
 configure_logging()
 logger = logging.getLogger(__name__)
-
 
 def create_dir(dirPath: str):
     """
@@ -177,7 +177,6 @@ def is_allocated(scode1: str, scode2: str) -> bool:
     """
     return allocations.get(scode1, {}).get(scode2) is not None
 
-
 parser = argparse.ArgumentParser(
     prog='center randomizer',
     description='Assigns centers to exam centers to students')
@@ -204,6 +203,10 @@ prefs = read_prefs(args.prefs_tsv)
 
 remaining = 0       # stores count of non allocated students
 allocations = {}    # to track mutual allocations
+
+# Check for duplicate schools or school codes
+check_duplicate.schools(schools)
+check_duplicate.centers(centers)
 
 OUTPUT_DIR = 'results/'
 create_dir(OUTPUT_DIR)  # Create the output directory if not exists
@@ -289,7 +292,7 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
 
         if to_allot > 0:
             remaining += to_allot
-            logger.warn(
+            logger.warning(
                 f"{to_allot}/{s['count']} left for {s['scode']} {s['name-address']} centers: {len(centers_for_school)}")
 
     logger.info("Remaining capacity at each center (remaining_capacity cscode):")
