@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>School Center Data</title>
+        <link
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="mt-4 mb-4">School Center Data</h1>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form action="/" method="get">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    name="query"
+                                    placeholder="Search for school or center or center address"
+                                    value="{{ form_data.query }}"
+                                />
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    name="scode"
+                                    placeholder="Search by scode"
+                                    value="{{ form_data.scode }}"
+                                />
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    name="cscode"
+                                    placeholder="Search by cscode"
+                                    value="{{ form_data.cscode }}"
+                                />
+                            </div>
+                            <div class="form-group col-md-6">
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    name="min_capacity"
+                                    placeholder="Minimum center capacity"
+                                    value="{{ form_data.min_capacity }}"
+                                />
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    name="max_capacity"
+                                    placeholder="Maximum center capacity"
+                                    value="{{ form_data.max_capacity }}"
+                                />
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    class="form-control"
+                                    name="min_distance"
+                                    placeholder="Minimum distance"
+                                    value="{{ form_data.min_distance }}"
+                                />
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    class="form-control"
+                                    name="max_distance"
+                                    placeholder="Maximum distance"
+                                    value="{{ form_data.max_distance }}"
+                                />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            Search
+                        </button>
+                        <a href="/reset" class="btn btn-secondary">Reset</a>
+                    </form>
+                </div>
+            </div>
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>scode</th>
+                        <th>s_count</th>
+                        <th>school_name</th>
+                        <th>school_lat</th>
+                        <th>school_long</th>
+                        <th>cscode</th>
+                        <th>center_name</th>
+                        <th>center_address</th>
+                        <th>center_capacity</th>
+                        <th>distance_km</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                    <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                        <a
+                            class="page-link"
+                            href="{{ url_for('home', page=page-1, query=form_data.query, scode=form_data.scode, cscode=form_data.cscode, min_capacity=form_data.min_capacity, max_capacity=form_data.max_capacity, min_distance=form_data.min_distance, max_distance=form_data.max_distance) if page > 1 else '#' }}"
+                            >Previous</a
+                        >
+                    </li>
+                    <li
+                        class="page-item {% if page >= data|length // 10 + 1 %}disabled{% endif %}"
+                    >
+                        <a
+                            class="page-link"
+                            href="{{ url_for('home', page=page+1, query=form_data.query, scode=form_data.scode, cscode=form_data.cscode, min_capacity=form_data.min_capacity, max_capacity=form_data.max_capacity, min_distance=form_data.min_distance, max_distance=form_data.max_distance) if page < data|length // 10 + 1 else '#' }}"
+                            >Next</a
+                        >
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </body>
+</html>
