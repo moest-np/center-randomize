@@ -1,10 +1,15 @@
 """Custom logging module with some formatting."""
 
+"""
+Use the CRITICAL level sparingly.
+The logger.critical() invokes a blinking text in the console.
+Limit usage for critical points where the program would not run 
+"""
+
 import os
 import sys
 import logging.config
 from os.path import abspath, dirname, join, exists
-
 
 ROOT_DIR: str = abspath(dirname(dirname(__file__)))
 LOGS_DIR: str = join(ROOT_DIR, "logs")
@@ -17,61 +22,71 @@ if not exists(LOGS_DIR):
 if not exists(LOGS_TARGET):
     with open(LOGS_TARGET, "a", encoding="utf-8") as file:
         os.utime(LOGS_TARGET, None)
+        
+class CustomFormatter(logging.Formatter):
+    def format(self, record):
+        # Colors
+        start_yellow = "\x1b[33;20m"
+        start_red = "\x1b[31;21m"
+        start_bold_red = "\x1b[31;5m"   # This blinks in console for importance. USE CRITICAL SPARINGLY.
+        start_purple = "\x1b[1;35m" # fun fact: my sister's fav color :)
+        reset_colors = "\x1b[0m"
+        
+        original_format = self._style._fmt
+        if record.levelno == logging.ERROR:
+            self._style._fmt = "❌ "+ start_red + original_format + reset_colors  
+            #DEBUG001 - uncomment the following line and COMMENT the above line to use the \n feature. If needed, add \n to other levels in a similar manner
+            # self._style._fmt = "\n❌ "+ start_red + original_format + reset_colors  
+        elif record.levelno == logging.WARN:
+            self._style._fmt = "🔔 " + start_yellow + original_format + reset_colors  
+        elif record.levelno == logging.INFO:
+            self._style._fmt = "🚀 " + original_format 
+        elif record.levelno == logging.CRITICAL:
+            self._style._fmt = "❌ "+ start_bold_red + original_format + reset_colors +" ❌"
+        elif record.levelno == logging.DEBUG:
+            self._style._fmt = "\n---- " + start_purple + original_format + reset_colors + "----\n"
+        formatted_message = super().format(record)
+        self._style._fmt = original_format
+        return formatted_message
 
-
-LOGGING_CONFIG: dict = {
+# One formatter for console, another for file log
+LOGGING_CONFIG = {
     "version": 1,
+    "disable_existing_loggers": False,
     "formatters": {
+        "custom": {
+            "()": CustomFormatter,
+            "format": "%(levelname)-7s [%(asctime)s] in %(name)s :: %(message)s",
+            "datefmt": "%y-%m-%d %H:%M:%S",
+        },
         "standard": {
+            "format": "%(levelname)-7s [%(asctime)s] in %(name)s :: %(message)s",
             "datefmt": "%y-%m-%d %H:%M:%S",
-            "format": "🚀 %(asctime)s - %(name)s - %(levelname)s - %(message)s \n",
-        },
-        "warn": {
-            "datefmt": "%y-%m-%d %H:%M:%S",
-            "format": "🔔 %(asctime)s - %(name)s - %(levelname)s - %(message)s \n",
-        },
-        "error": {
-            "datefmt": "%y-%m-%d %H:%M:%S",
-            "format": "❌ %(asctime)s - %(name)s - %(levelname)s - %(message)s \n",
         },
     },
     "handlers": {
-        "file_error": {
-            "mode": "a",
-            "level": "ERROR",
-            "encoding": "utf-8",
-            "formatter": "error",
-            "filename": LOGS_TARGET,
-            "class": CUSTOM_FILE_HANDLER_PATH,
-        },
-        "console_info": {
-            "level": "INFO",
-            "stream": sys.stdout,
+        "file": {
+            "class": "logging.FileHandler",
+            "level": "WARNING",  # only log the WARNING level and above i.e. no INFO level logs on the file
             "formatter": "standard",
-            "class": "logging.StreamHandler",
+            "filename": LOGS_TARGET,
+            "encoding": "utf-8",
         },
-        "console_warn": {
-            "level": "WARN",
-            "formatter": "warn",
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "INFO",
+            "formatter": "custom",
             "stream": sys.stdout,
-            "class": "logging.StreamHandler",
-        },
-        "console_error": {
-            "level": "ERROR",
-            "stream": sys.stderr,
-            "formatter": "error",
-            "class": "logging.StreamHandler",
         },
     },
     "loggers": {
         "": {
-            "level": "INFO",
-            "propagate": True,
-            "handlers": ["file_error", "console_info", "console_warn", "console_error"],
-        }
+            "level": "DEBUG",
+            "handlers": ["file", "console"],
+            "propagate": False,
+        },
     },
 }
-
 
 # Call this once to initialize logger
 def configure_logging() -> None:
