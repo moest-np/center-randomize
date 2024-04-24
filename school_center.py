@@ -1,18 +1,31 @@
-PREF_DISTANCE_THRESHOLD = 2  # Preferred threshold distance in kilometers
-ABS_DISTANCE_THRESHOLD = 7  # Absolute threshold distance in kilometers
-MIN_STUDENT_IN_CENTER = 10  # minimum number of students from a school to be assigned to a center in normal circumstances
-STRETCH_CAPACITY_FACTOR = 0.02  # how much can center capacity be streched if need arises
-PREF_CUTOFF = -4 # Do not allocate students with pref score less than cutoff
-
-import math
-import csv
-import random
-import argparse
+from utils.custom_logger import configure_logging
 from typing import Dict, List
 import sys
+import os
+import argparse
+import logging
+import random
+import csv
+import math
 
-from logging import getLogger
-logger = getLogger(__name__)
+# Parameters
+PREF_DISTANCE_THRESHOLD = 2     # Preferred threshold distance in km
+ABS_DISTANCE_THRESHOLD = 7      # Absolute threshold distance in km
+MIN_STUDENT_IN_CENTER = 10      # Min. no of students from a school to be assigned to a center in normal circumstances
+STRETCH_CAPACITY_FACTOR = 0.02  # How much can center capacity be streched if need arises
+PREF_CUTOFF = -4                # Do not allocate students with pref score less than cutoff
+
+configure_logging()
+logger = logging.getLogger(__name__)
+
+
+def create_dir(dirPath: str):
+    """
+    Create the given directory if it doesn't exists
+    - Creates all the directories needed to resolve to the provided directory path
+    """
+    if not os.path.exists(dirPath):
+        os.makedirs(dirPath)
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
