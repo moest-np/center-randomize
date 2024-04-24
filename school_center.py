@@ -17,16 +17,6 @@ PREF_CUTOFF = -4                # Do not allocate students with pref score less 
 configure_logging()
 logger = logging.getLogger(__name__)
 
-
-def create_dir(dirPath: str):
-    """
-    Create the given directory if it doesn't exists
-    - Creates all the directories needed to resolve to the provided directory path
-    """
-    if not os.path.exists(dirPath):
-        os.makedirs(dirPath)
-
-
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
     Calculate the great circle distance between two points
@@ -187,8 +177,8 @@ parser.add_argument('centers_tsv', default='centers.tsv',
                     help="Tab separated (TSV) file containing center details")
 parser.add_argument('prefs_tsv', default='prefs.tsv',
                     help="Tab separated (TSV) file containing preference scores")
-parser.add_argument(
-    '-o', '--output', default='school-center.tsv', help='Output file')
+parser.add_argument('-o', '--output', default='school-center.tsv',
+                     help='Output file')
 parser.add_argument('-s', '--seed', action='store', metavar='SEEDVALUE',
                      default=None, type=float, 
                      help='Initialization seed for Random Number Generator')
@@ -196,28 +186,21 @@ parser.add_argument('-s', '--seed', action='store', metavar='SEEDVALUE',
 args = parser.parse_args()
 random = random.Random(args.seed) #overwrites the random module to use seeded rng
 
-OUTPUT_DIR = 'results/' # Default Directory
+output_dir, output_filename = os.path.split(args.output)
 
-# Nirmala, Date: 23'April'24:
-# If Directory and fileName are provided as arguments, then this logic will handle them. 
-# In case they are not provided, it works in the same way as it was working previously,
-# where the default file is created inside the results directory (i.e., default directory)
-if args.output != parser.get_default('output'):
-  # Tuple Unpacking to separate Directory and Filename
-  output_dir, output_filename = os.path.split(args.output)
-  if output_dir is not None:
-   OUTPUT_DIR = output_dir
+if len(output_dir) == 0:
+    output_dir = 'results/' # Default Directory
 
- # Combine the directory and filename to ensure the file is created within the directory
-  output_file_path = os.path.join(OUTPUT_DIR, output_filename)
-else:
- output_file_path = os.path.join(OUTPUT_DIR, args.output)
-intermediate_file_path = os.path.join(OUTPUT_DIR, 'school-center-distance.tsv')
- 
+if len(output_filename) == 0:
+    output_filename = parser.get_default('output')
+
 # Create Directory if specified Directory has not been created 
-if OUTPUT_DIR and not os.path.exists(OUTPUT_DIR):
-    os.makedirs(OUTPUT_DIR)
+if output_dir and not os.path.exists(output_dir):
+    os.makedirs(output_dir)
 
+output_file_path = os.path.join(output_dir, output_filename)
+
+intermediate_file_path = os.path.join(output_dir, 'school-center-distance.tsv')
 
 schools = sorted(read_tsv(args.schools_tsv), key= school_sort_key)
 centers = read_tsv(args.centers_tsv)
@@ -227,7 +210,6 @@ prefs = read_prefs(args.prefs_tsv)
 remaining = 0       # stores count of non allocated students
 allocations = {}    # to track mutual allocations
 
-#create_dir(OUTPUT_DIR) # Create the output directory if not exists 
 with open(intermediate_file_path, 'w', encoding='utf-8') as intermediate_file, \
 open(output_file_path, 'w', encoding='utf-8') as a_file:
     writer = csv.writer(intermediate_file, delimiter="\t")
