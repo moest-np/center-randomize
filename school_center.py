@@ -1,8 +1,6 @@
 from utils.custom_logger import configure_logging
 from typing import Dict, List
-
 import sys
-
 import os
 import argparse
 import logging
@@ -21,7 +19,6 @@ configure_logging()
 logger = logging.getLogger(__name__)
 
 
-
 def create_dir(dirPath: str):
     """
     Create the given directory if it doesn't exists
@@ -29,8 +26,6 @@ def create_dir(dirPath: str):
     """
     if not os.path.exists(dirPath):
         os.makedirs(dirPath)
-
-
 
 
 def haversine_distance(lat1, lon1, lat2, lon2):
