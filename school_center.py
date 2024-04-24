@@ -1,9 +1,9 @@
 from utils.custom_logger import configure_logging
 from typing import Dict, List
+from random import Random
 import os
 import argparse
 import logging
-import random
 import csv
 import math
 
@@ -16,6 +16,10 @@ PREF_CUTOFF = -4                # Do not allocate students with pref score less 
 
 configure_logging()
 logger = logging.getLogger(__name__)
+
+random = Random()
+allocations = {}  # to track mutual allocations
+prefs = {}  # preference score for the given school and center
 
 
 def create_dir(dirPath: str):
@@ -36,7 +40,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     # Convert decimal degrees to radians
     lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
 
-    # Haversine formula 
+    # Haversine formula
     dlon = lon2 - lon1
     dlat = lat2 - lat1
     a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
@@ -55,12 +59,12 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
 
     """
     def center_to_dict(c, distance):
-        return {'cscode': c['cscode'], 
-                 'name': c['name'], 
-                 'address': c['address'], 
-                 'capacity': c['capacity'], 
-                 'lat': c['lat'], 
-                 'long': c['long'], 
+        return {'cscode': c['cscode'],
+                 'name': c['name'],
+                 'address': c['address'],
+                 'capacity': c['capacity'],
+                 'lat': c['lat'],
+                 'long': c['long'],
                  'distance_km': distance}
 
     def sort_key(c):
@@ -149,7 +153,7 @@ def calc_per_center(count: int) -> int:
         return 100
     # elif count <= 900:
     #     return 200
-    else: 
+    else:
         return 200
 
 
@@ -178,123 +182,140 @@ def is_allocated(scode1: str, scode2: str) -> bool:
     return allocations.get(scode1, {}).get(scode2) is not None
 
 
-parser = argparse.ArgumentParser(
-    prog='center randomizer',
-    description='Assigns centers to exam centers to students')
-parser.add_argument('schools_tsv', default='schools.tsv',
-                    help="Tab separated (TSV) file containing school details")
-parser.add_argument('centers_tsv', default='centers.tsv',
-                    help="Tab separated (TSV) file containing center details")
-parser.add_argument('prefs_tsv', default='prefs.tsv',
-                    help="Tab separated (TSV) file containing preference scores")
-parser.add_argument(
-    '-o', '--output', default='school-center.tsv', help='Output file')
-parser.add_argument('-s', '--seed', action='store', metavar='SEEDVALUE',
-                     default=None, type=float, 
-                     help='Initialization seed for Random Number Generator')
+def randomize(
+    *,
+    schools_tsv: str,
+    centers_tsv: str,
+    prefs_tsv: str,
+    output: str,
+    seed: float = None
+):
+    if seed:
+        random.seed(seed)
 
-args = parser.parse_args()
+    schools = sorted(read_tsv(schools_tsv), key= school_sort_key)
+    centers = read_tsv(centers_tsv)
+    centers_remaining_cap = {c['cscode']: int(c['capacity']) for c in centers}
+    prefs.update(read_prefs(prefs_tsv))
 
-random = random.Random(args.seed) #overwrites the random module to use seeded rng
+    remaining = 0       # stores count of non allocated students
 
-schools = sorted(read_tsv(args.schools_tsv), key= school_sort_key)
-centers = read_tsv(args.centers_tsv)
-centers_remaining_cap = {c['cscode']: int(c['capacity']) for c in centers}
-prefs = read_prefs(args.prefs_tsv)
+    OUTPUT_DIR = 'results/'
+    create_dir(OUTPUT_DIR)  # Create the output directory if not exists
+    with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-8') as intermediate_file, \
+            open(OUTPUT_DIR + output, 'w', encoding='utf-8') as a_file:
+        writer = csv.writer(intermediate_file, delimiter="\t")
+        writer.writerow(["scode",
+                        "s_count",
+                        "school_name",
+                        "school_lat",
+                        "school_long",
+                        "cscode",
+                        "center_name",
+                        "center_address",
+                        "center_capacity",
+                        "distance_km"])
 
-remaining = 0       # stores count of non allocated students
-allocations = {}    # to track mutual allocations
+        allocation_file = csv.writer(a_file, delimiter='\t')
+        allocation_file.writerow(["scode",
+                                "school",
+                                "cscode",
+                                "center",
+                                "center_address",
+                                "allocation",
+                                "distance_km"])
 
-OUTPUT_DIR = 'results/'
-create_dir(OUTPUT_DIR)  # Create the output directory if not exists
-with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-8') as intermediate_file, \
-        open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
-    writer = csv.writer(intermediate_file, delimiter="\t")
-    writer.writerow(["scode", 
-                     "s_count", 
-                     "school_name", 
-                     "school_lat", 
-                     "school_long",
-                     "cscode", 
-                     "center_name", 
-                     "center_address", 
-                     "center_capacity", 
-                     "distance_km"])
+        for s in schools:
+            centers_for_school = centers_within_distance(
+                s, centers, PREF_DISTANCE_THRESHOLD)
+            to_allot = int(s['count'])
+            per_center = calc_per_center(to_allot)
 
-    allocation_file = csv.writer(a_file, delimiter='\t')
-    allocation_file.writerow(["scode", 
-                              "school", 
-                              "cscode", 
-                              "center", 
-                              "center_address", 
-                              "allocation", 
-                              "distance_km"])
+            allocated_centers = {}
 
-    for s in schools:
-        centers_for_school = centers_within_distance(
-            s, centers, PREF_DISTANCE_THRESHOLD)
-        to_allot = int(s['count'])
-        per_center = calc_per_center(to_allot)
-
-        allocated_centers = {}
-
-        # per_center = math.ceil(to_allot / min(calc_num_centers(to_allot), len(centers_for_school)))
-        for c in centers_for_school:
-            writer.writerow([s['scode'], 
-                             s['count'], 
-                             s['name-address'], 
-                             s['lat'], 
-                             s['long'],
-                             c['cscode'], 
-                             c['name'], 
-                             c['address'], 
-                             c['capacity'], 
-                             c['distance_km']])
-            if is_allocated(c['cscode'], s['scode']):
-                continue
-            next_allot = min(to_allot, per_center, max(
-                centers_remaining_cap[c['cscode']], MIN_STUDENT_IN_CENTER))
-            if to_allot > 0 and next_allot > 0 and centers_remaining_cap[c['cscode']] >= next_allot:
-                allocated_centers[c['cscode']] = c
-                allocate(s['scode'], c['cscode'], next_allot)
-                # allocation.writerow([s['scode'], s['name-address'], c['cscode'], c['name'], c['address'], next_allot, c['distance_km']])
-                to_allot -= next_allot
-                centers_remaining_cap[c['cscode']] -= next_allot
-
-        if to_allot > 0:  # try again with relaxed constraints and more capacity at centers
-            expanded_centers = centers_within_distance(
-                s, centers, ABS_DISTANCE_THRESHOLD)
-            for c in expanded_centers:
+            # per_center = math.ceil(to_allot / min(calc_num_centers(to_allot), len(centers_for_school)))
+            for c in centers_for_school:
+                writer.writerow([s['scode'],
+                                s['count'],
+                                s['name-address'],
+                                s['lat'],
+                                s['long'],
+                                c['cscode'],
+                                c['name'],
+                                c['address'],
+                                c['capacity'],
+                                c['distance_km']])
                 if is_allocated(c['cscode'], s['scode']):
                     continue
-                stretched_capacity = math.floor(
-                    int(c['capacity']) * STRETCH_CAPACITY_FACTOR + centers_remaining_cap[c['cscode']])
-                next_allot = min(to_allot, max(
-                    stretched_capacity, MIN_STUDENT_IN_CENTER))
-                if to_allot > 0 and next_allot > 0 and stretched_capacity >= next_allot:
+                next_allot = min(to_allot, per_center, max(
+                    centers_remaining_cap[c['cscode']], MIN_STUDENT_IN_CENTER))
+                if to_allot > 0 and next_allot > 0 and centers_remaining_cap[c['cscode']] >= next_allot:
                     allocated_centers[c['cscode']] = c
                     allocate(s['scode'], c['cscode'], next_allot)
                     # allocation.writerow([s['scode'], s['name-address'], c['cscode'], c['name'], c['address'], next_allot, c['distance_km']])
                     to_allot -= next_allot
                     centers_remaining_cap[c['cscode']] -= next_allot
 
-        for c in allocated_centers.values():
-            allocation_file.writerow([s['scode'], 
-                                      s['name-address'], 
-                                      c['cscode'], 
-                                      c['name'],
-                                      c['address'], 
-                                      allocations[s['scode']][c['cscode']], 
-                                      c['distance_km']])
+            if to_allot > 0:  # try again with relaxed constraints and more capacity at centers
+                expanded_centers = centers_within_distance(
+                    s, centers, ABS_DISTANCE_THRESHOLD)
+                for c in expanded_centers:
+                    if is_allocated(c['cscode'], s['scode']):
+                        continue
+                    stretched_capacity = math.floor(
+                        int(c['capacity']) * STRETCH_CAPACITY_FACTOR + centers_remaining_cap[c['cscode']])
+                    next_allot = min(to_allot, max(
+                        stretched_capacity, MIN_STUDENT_IN_CENTER))
+                    if to_allot > 0 and next_allot > 0 and stretched_capacity >= next_allot:
+                        allocated_centers[c['cscode']] = c
+                        allocate(s['scode'], c['cscode'], next_allot)
+                        # allocation.writerow([s['scode'], s['name-address'], c['cscode'], c['name'], c['address'], next_allot, c['distance_km']])
+                        to_allot -= next_allot
+                        centers_remaining_cap[c['cscode']] -= next_allot
 
-        if to_allot > 0:
-            remaining += to_allot
-            logger.warn(
-                f"{to_allot}/{s['count']} left for {s['scode']} {s['name-address']} centers: {len(centers_for_school)}")
+            for c in allocated_centers.values():
+                allocation_file.writerow([s['scode'],
+                                        s['name-address'],
+                                        c['cscode'],
+                                        c['name'],
+                                        c['address'],
+                                        allocations[s['scode']][c['cscode']],
+                                        c['distance_km']])
 
-    logger.info("Remaining capacity at each center (remaining_capacity cscode):")
-    logger.info(sorted([(v, k)
-                for k, v in centers_remaining_cap.items() if v != 0]))
-    logger.info(
-        f"Total remaining capacity across all centers: {sum({k:v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
-    logger.info(f"Students not assigned: {remaining}")
+            if to_allot > 0:
+                remaining += to_allot
+                logger.warning(
+                    f"{to_allot}/{s['count']} left for {s['scode']} {s['name-address']} centers: {len(centers_for_school)}")
+
+        logger.info("Remaining capacity at each center (remaining_capacity cscode):")
+        logger.info(sorted([(v, k)
+                    for k, v in centers_remaining_cap.items() if v != 0]))
+        logger.info(
+            f"Total remaining capacity across all centers: {sum({k:v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
+        logger.info(f"Students not assigned: {remaining}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog='center randomizer',
+        description='Assigns centers to exam centers to students')
+    parser.add_argument('schools_tsv', default='schools.tsv',
+                        help="Tab separated (TSV) file containing school details")
+    parser.add_argument('centers_tsv', default='centers.tsv',
+                        help="Tab separated (TSV) file containing center details")
+    parser.add_argument('prefs_tsv', default='prefs.tsv',
+                        help="Tab separated (TSV) file containing preference scores")
+    parser.add_argument(
+        '-o', '--output', default='school-center.tsv', help='Output file')
+    parser.add_argument('-s', '--seed', action='store', metavar='SEEDVALUE',
+                        default=None, type=float,
+                        help='Initialization seed for Random Number Generator')
+
+    args = parser.parse_args()
+    randomize(
+        schools_tsv=args.schools_tsv,
+        centers_tsv=args.centers_tsv,
+        prefs_tsv=args.prefs_tsv,
+        output=args.output,
+        seed=args.seed
+    )
