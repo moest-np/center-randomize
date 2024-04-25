@@ -103,13 +103,13 @@ def read_tsv(file_path: str) -> List[Dict[str, str]]:
         logger.error(f"File '{file_path} : {e}' not found.")
         sys.exit(1)
     except PermissionError as e:
-        logger.error(f"Permission denied while accessing file '{file_path}' :{e}.")
+        logger.error(f"Permission denied while accessing file '{file_path}' : {e}.")
         sys.exit(1)
     except IOError as e:
-        logger.error(f"Error opening or reading file: '{file_path}':{e}")
+        logger.error(f"Error opening or reading file: '{file_path}' : {e}")
         sys.exit(1)
     except Exception as e:
-        logger.error(f"An unexpected error occurred while reading file '{file_path}': {e}")
+        logger.error(f"An unexpected error occurred while reading file '{file_path}' : {e}")
         sys.exit(1)
     return data
 
@@ -206,8 +206,8 @@ parser.add_argument('centers_tsv', default='centers.tsv',
                     help="Tab separated (TSV) file containing center details")
 parser.add_argument('prefs_tsv', default='prefs.tsv',
                     help="Tab separated (TSV) file containing preference scores")
-parser.add_argument(
-    '-o', '--output', default = DEFAULT_OUTPUT_FILENAME, help='Output file')
+parser.add_argument('-o', '--output', default = DEFAULT_OUTPUT_FILENAME, 
+                    help='Output file')
 parser.add_argument('-s', '--seed', action='store', metavar='SEEDVALUE',
                      default=None, type=float, 
                      help='Initialization seed for Random Number Generator')
@@ -264,6 +264,8 @@ open(path.join(output_dirname, output_filename), 'w', encoding='utf-8') as a_fil
                               "cscode", 
                               "center", 
                               "center_address", 
+                              "center_lat",
+                              "center_long",
                               "allocation", 
                               "distance_km"])
 
@@ -321,6 +323,8 @@ open(path.join(output_dirname, output_filename), 'w', encoding='utf-8') as a_fil
                                       c['cscode'], 
                                       c['name'],
                                       c['address'], 
+                                      c['lat'],
+                                      c['long'],
                                       allocations[s['scode']][c['cscode']], 
                                       c['distance_km']])
 
