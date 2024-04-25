@@ -1,6 +1,7 @@
 from utils.custom_logger import configure_logging
 from typing import Dict, List
-from os import path, makedirs
+from os import sys
+import path, makedirs
 import argparse
 import logging
 import random
@@ -93,10 +94,23 @@ def read_tsv(file_path: str) -> List[Dict[str, str]]:
     Return a list of schools/centers as dicts.
     """
     data = []
-    with open(file_path, 'r', newline='', encoding='utf-8') as file:
-        reader = csv.DictReader(file, delimiter='\t')
-        for row in reader:
-            data.append(dict(row))
+    try:
+        with open(file_path, 'r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file, delimiter='\t')
+            for row in reader:
+                data.append(dict(row))
+    except FileNotFoundError as e:
+        logger.error(f"File '{file_path}' not found.")
+        sys.exit(1)
+    except PermissionError as e:
+        logger.error(f"Permission denied while accessing file '{file_path}'.")
+        sys.exit(1)
+    except IOError as e:
+        logger.error(f"Error opening or reading file: {file_path}")
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred while reading file '{file_path}': {e}")
+        sys.exit(1)
     return data
 
 
@@ -106,17 +120,29 @@ def read_prefs(file_path: str) -> Dict[str, Dict[str, int]]:
     Return a dict of dicts key scode and then cscode
     """
     prefs = {}
-    with open(file_path, 'r', newline='', encoding='utf-8') as file:
-        reader = csv.DictReader(file, delimiter='\t')
-        for row in reader:
-            if prefs.get(row['scode']):
-                if prefs[row['scode']].get(row['cscode']):
-                    prefs[row['scode']][row['cscode']] += int(row['pref'])
+    try:
+        with open(file_path, 'r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file, delimiter='\t')
+            for row in reader:
+                if prefs.get(row['scode']):
+                    if prefs[row['scode']].get(row['cscode']):
+                        prefs[row['scode']][row['cscode']] += int(row['pref'])
+                    else:
+                        prefs[row['scode']][row['cscode']] = int(row['pref'])
                 else:
-                    prefs[row['scode']][row['cscode']] = int(row['pref'])
-            else:
-                prefs[row['scode']] = {row['cscode']: int(row['pref'])}
-
+                    prefs[row['scode']] = {row['cscode']: int(row['pref'])}
+    except FileNotFoundError as e:
+        logger.error(f"File '{file_path}' not found.")
+        sys.exit(1)
+    except PermissionError as e:
+        logger.error(f"Permission denied while accessing file '{file_path}'.")
+        sys.exit(1)
+    except IOError as e:
+        logger.error(f"Error opening or reading file: {file_path}")
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred while reading file '{file_path}': {e}")
+        sys.exit(1)
     return prefs
 
 
