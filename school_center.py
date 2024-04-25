@@ -75,7 +75,7 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
             school_long), float(c.get('lat')), float(c.get('long')))
         if school['scode'] == c['cscode']:
             continue
-        if nearest_center == None or distance < nearest_distance:
+        if nearest_center is None or distance < nearest_distance:
             nearest_center = c
             nearest_distance = distance
 
@@ -99,13 +99,13 @@ def read_tsv(file_path: str) -> List[Dict[str, str]]:
             reader = csv.DictReader(file, delimiter='\t')
             for row in reader:
                 data.append(dict(row))
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         logger.error(f"File '{file_path}' not found.")
         sys.exit(1)
-    except PermissionError as e:
+    except PermissionError:
         logger.error(f"Permission denied while accessing file '{file_path}'.")
         sys.exit(1)
-    except IOError as e:
+    except IOError:
         logger.error(f"Error opening or reading file: {file_path}")
         sys.exit(1)
     except Exception as e:
@@ -131,13 +131,13 @@ def read_prefs(file_path: str) -> Dict[str, Dict[str, int]]:
                         prefs[row['scode']][row['cscode']] = int(row['pref'])
                 else:
                     prefs[row['scode']] = {row['cscode']: int(row['pref'])}
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         logger.error(f"File '{file_path}' not found.")
         sys.exit(1)
-    except PermissionError as e:
+    except PermissionError:
         logger.error(f"Permission denied while accessing file '{file_path}'.")
         sys.exit(1)
-    except IOError as e:
+    except IOError:
         logger.error(f"Error opening or reading file: {file_path}")
         sys.exit(1)
     except Exception as e:
@@ -206,8 +206,8 @@ parser.add_argument('centers_tsv', default='centers.tsv',
                     help="Tab separated (TSV) file containing center details")
 parser.add_argument('prefs_tsv', default='prefs.tsv',
                     help="Tab separated (TSV) file containing preference scores")
-parser.add_argument(
-    '-o', '--output', default = DEFAULT_OUTPUT_FILENAME, help='Output file')
+parser.add_argument('-o', '--output', default = DEFAULT_OUTPUT_FILENAME, 
+                    help='Output file')
 parser.add_argument('-s', '--seed', action='store', metavar='SEEDVALUE',
                      default=None, type=float, 
                      help='Initialization seed for Random Number Generator')
@@ -237,7 +237,7 @@ def get_output_filename():
     if(basename):
         return basename
     else:
-        return DEFAULT_OUTOUT_FILENAME
+        return DEFAULT_OUTPUT_FILENAME
 
 
 output_dirname = get_output_dir()
