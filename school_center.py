@@ -75,7 +75,7 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
             school_long), float(c.get('lat')), float(c.get('long')))
         if school['scode'] == c['cscode']:
             continue
-        if nearest_center == None or distance < nearest_distance:
+        if nearest_center is None or distance < nearest_distance:
             nearest_center = c
             nearest_distance = distance
 
@@ -100,13 +100,13 @@ def read_tsv(file_path: str) -> List[Dict[str, str]]:
             for row in reader:
                 data.append(dict(row))
     except FileNotFoundError as e:
-        logger.error(f"File '{file_path}' not found.")
+        logger.error(f"File '{file_path} : {e}' not found.")
         sys.exit(1)
     except PermissionError as e:
-        logger.error(f"Permission denied while accessing file '{file_path}'.")
+        logger.error(f"Permission denied while accessing file '{file_path}' :{e}.")
         sys.exit(1)
     except IOError as e:
-        logger.error(f"Error opening or reading file: {file_path}")
+        logger.error(f"Error opening or reading file: '{file_path}':{e}")
         sys.exit(1)
     except Exception as e:
         logger.error(f"An unexpected error occurred while reading file '{file_path}': {e}")
@@ -132,13 +132,13 @@ def read_prefs(file_path: str) -> Dict[str, Dict[str, int]]:
                 else:
                     prefs[row['scode']] = {row['cscode']: int(row['pref'])}
     except FileNotFoundError as e:
-        logger.error(f"File '{file_path}' not found.")
+        logger.error(f"File '{file_path} :{e}' not found.")
         sys.exit(1)
     except PermissionError as e:
-        logger.error(f"Permission denied while accessing file '{file_path}'.")
+        logger.error(f"Permission denied while accessing file '{file_path}:{e}'.")
         sys.exit(1)
     except IOError as e:
-        logger.error(f"Error opening or reading file: {file_path}")
+        logger.error(f"Error opening or reading file: {file_path} :{e}")
         sys.exit(1)
     except Exception as e:
         logger.error(f"An unexpected error occurred while reading file '{file_path}': {e}")
@@ -237,7 +237,7 @@ def get_output_filename():
     if(basename):
         return basename
     else:
-        return DEFAULT_OUTOUT_FILENAME
+        return DEFAULT_OUTPUT_FILENAME
 
 
 output_dirname = get_output_dir()
