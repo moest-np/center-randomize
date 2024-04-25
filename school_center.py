@@ -237,7 +237,7 @@ def get_output_filename():
     if(basename):
         return basename
     else:
-        return DEFAULT_OUTOUT_FILENAME
+        return DEFAULT_OUTPUT_FILENAME # DEFAULT_OUTOUT_FILENAME is not found issue fixed
 
 
 output_dirname = get_output_dir()
