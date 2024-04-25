@@ -89,3 +89,29 @@ python3 school_center.py sample_data/schools_grade12_2081.tsv sample_data/center
 
 🚀 24-04-22 20:40:27 - __main__ - INFO - Students not assigned: 0
 ```
+
+##  Build stream lit app includes the following steps
+
+Install Streamlit using pip
+```bash
+pip install streamlit
+```
+
+Run the app from command line
+```bash
+streamlit run app.py
+```
+
+A browser window will open showing your app. Also the changes to python files will automatically reload.
+![image](https://github.com/sekhar5031/center-randomize-moest/assets/102132259/d859e64e-1e71-4efb-a031-16602039ddf5)
+
+
+Upload the sample data present on the sample_data section
+![image](https://github.com/sekhar5031/center-randomize-moest/assets/102132259/00a0e3cb-76fe-42bf-8e9d-78816aaf388c)
+
+Click on Calculate centers which will give the school center, school center distance, view school data, view data centers and aslo the view pref data.
+![image](https://github.com/sekhar5031/center-randomize-moest/assets/102132259/0bdd93c8-2fb1-4753-9416-54e9e90d8de2)
+
+
+
+
