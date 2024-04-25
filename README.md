@@ -68,7 +68,7 @@ scode	cscode	pref	reason
 
 ## Command
 
-To run `school_center.py` use the command below:
+To run `app.py` use the command below:
 
 ```bash
 python3 app.py sample_data/schools_grade12_2081.tsv sample_data/centers_grade12_2081.tsv sample_data/prefs.tsv
