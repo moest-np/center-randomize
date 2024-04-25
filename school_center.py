@@ -215,7 +215,7 @@ output_filename = get_output_filename()
 makedirs(output_dirname, exist_ok=True) # Create the output directory if not exists
 
 with open(path.join(output_dirname, "school-center-distance.tsv"), 'w', encoding='utf-8') as intermediate_file, \
-open(path.join(output_dirname, 'output_filename'), 'w', encoding='utf-8') as a_file:
+open(path.join(output_dirname, output_filename), 'w', encoding='utf-8') as a_file:
     writer = csv.writer(intermediate_file, delimiter="\t")
     writer.writerow(["scode", 
                      "s_count", 
