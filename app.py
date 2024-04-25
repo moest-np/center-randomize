@@ -13,6 +13,9 @@ st.set_page_config(
    initial_sidebar_state="expanded",
 )
 
+st.title("Ministry of Education, science and technology - MOEST")
+st.caption("MOEST exam center calculator")
+
 #Sidebar
 with st.sidebar:
 
