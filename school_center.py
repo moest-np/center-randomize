@@ -253,6 +253,8 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
                               "cscode", 
                               "center", 
                               "center_address", 
+                              "center_lat",
+                              "center_long",
                               "allocation", 
                               "distance_km"])
 
@@ -310,6 +312,8 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
                                       c['cscode'], 
                                       c['name'],
                                       c['address'], 
+                                      c['lat'],
+                                      c['long'],
                                       allocations[s['scode']][c['cscode']], 
                                       c['distance_km']])
 
