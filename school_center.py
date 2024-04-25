@@ -264,6 +264,8 @@ open(path.join(output_dirname, output_filename), 'w', encoding='utf-8') as a_fil
                               "cscode", 
                               "center", 
                               "center_address", 
+                              "center_lat",
+                              "center_long",
                               "allocation", 
                               "distance_km"])
 
@@ -321,6 +323,8 @@ open(path.join(output_dirname, output_filename), 'w', encoding='utf-8') as a_fil
                                       c['cscode'], 
                                       c['name'],
                                       c['address'], 
+                                      c['lat'],
+                                      c['long'],
                                       allocations[s['scode']][c['cscode']], 
                                       c['distance_km']])
 
