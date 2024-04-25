@@ -14,6 +14,7 @@ MIN_STUDENT_IN_CENTER = 10      # Min. no of students from a school to be assign
 STRETCH_CAPACITY_FACTOR = 0.02  # How much can center capacity be streched if need arises
 PREF_CUTOFF = -4                # Do not allocate students with pref score less than cutoff
 DEFAULT_OUTPUT_DIR = 'results'  # Default directory to create output files if --output not provided
+DEFAULT_OUTOUT_FILENAME = 'school-center.tsv'
 
 configure_logging()
 logger = logging.getLogger(__name__)
@@ -206,7 +207,7 @@ parser.add_argument('centers_tsv', default='centers.tsv',
 parser.add_argument('prefs_tsv', default='prefs.tsv',
                     help="Tab separated (TSV) file containing preference scores")
 parser.add_argument(
-    '-o', '--output', default='school-center.tsv', help='Output file')
+    '-o', '--output', default = DEFAULT_OUTOUT_FILENAME, help='Output file')
 parser.add_argument('-s', '--seed', action='store', metavar='SEEDVALUE',
                      default=None, type=float, 
                      help='Initialization seed for Random Number Generator')
@@ -232,12 +233,18 @@ def get_output_dir():
         return DEFAULT_OUTPUT_DIR
 
 def get_output_filename():
-    return path.basename(args.output)
+    basename = path.basename(args.output)
+    if(basename):
+        return basename
+    else:
+        return DEFAULT_OUTOUT_FILENAME
 
 
 output_dirname = get_output_dir()
 output_filename = get_output_filename()
 makedirs(output_dirname, exist_ok=True) # Create the output directory if not exists
+
+print(path.join(output_dirname, output_filename))
 
 with open(path.join(output_dirname, "school-center-distance.tsv"), 'w', encoding='utf-8') as intermediate_file, \
 open(path.join(output_dirname, output_filename), 'w', encoding='utf-8') as a_file:
