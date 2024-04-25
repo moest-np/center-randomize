@@ -1,7 +1,6 @@
 from utils.custom_logger import configure_logging
 from typing import Dict, List
-from os import sys
-import path, makedirs
+from os import sys, path, makedirs
 import argparse
 import logging
 import random
