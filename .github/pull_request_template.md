@@ -41,8 +41,6 @@ Please review and complete the following checklist before submitting your pull r
 - [ ] I have added necessary documentation or updated existing documentation for the changes made.
 - [ ] I have addressed code review feedback and resolved any conflicts with the main branch.
 
-*Please fill the checkboxes with a tick (☑️) or cross (❌) to indicate whether the pull request addressed each checklist item.*
-
 ## Other information
 
 > Include screenshots of the component before and after the change.
