@@ -126,7 +126,7 @@ def generate_pdf(results_data,filename,title):
             }}
            #main-header {{
          display: flex;
-        align-items: center; /* Added align-items to center vertically */
+        align-items: center;
         justify-content: center;
     }}
  
@@ -255,8 +255,10 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
     # Download Button
 
     def download_handler():
-        generate_pdf(df_school_center, "school_center", "School Center")
-        generate_pdf(df_school_center_distance,"school_center_distance","School Center Distance")
+        print(df_school_center.columns)
+        print(df_school_center_distance.columns)
+        generate_pdf(df_school_center.drop(['center_lat','center_long'],axis=1), "school_center", "School Center")
+        generate_pdf(df_school_center_distance.drop(['school_lat','school_long'],axis=1),"school_center_distance","School Center Distance")
     st.button("Download Results as PDF!", on_click=download_handler)
 
 elif st.session_state.calculate_clicked and not st.session_state.calculated_data:
