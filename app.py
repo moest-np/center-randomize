@@ -7,6 +7,9 @@ import streamlit as st
 from streamlit_folium import st_folium
 import pdfkit
 
+#Constants
+DOWNLOAD_DIR="generated-pdfs"
+
 #Page Setup
 st.set_page_config(
    page_title="MOEST Exam Center Calculator",
@@ -99,6 +102,11 @@ def generate_pdf(results_data,filename,title):
     <head>
         <title>School Center</title>
         <style>
+            * {{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;  
+            }}
             /* Modern table styling */
             .modern-table {{
                 width: 100%;
@@ -113,10 +121,10 @@ def generate_pdf(results_data,filename,title):
             }}
             .modern-table th {{
                 background-color: #f8f8f8;
-                color: #333333;  /* Header text color */
-                font-weight: bold;  /* Bold header text */
-                text-transform: uppercase;  /* Uppercase header text */
-                letter-spacing: 1px;  /* Increased letter spacing for header text */
+                color: #333333; 
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 1px;
             }}
             .modern-table tr:nth-child(even) {{
                 background-color: #f2f2f2;
@@ -125,14 +133,15 @@ def generate_pdf(results_data,filename,title):
                 background-color: #eaeaea;
             }}
            #main-header {{
-         display: flex;
-        align-items: center;
-        justify-content: center;
-    }}
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            }}
  
-    .header-text-container {{
-    text-align: center;
-    }}
+            .header-text-container {{
+            text-align: center;
+            }}
         </style>
     </head>
     <body>
@@ -142,6 +151,7 @@ def generate_pdf(results_data,filename,title):
       <h1 class="header-title">नेपाल सरकार</h1>
       <h2 class="header-subtitle">शिक्षा, विज्ञान तथा प्रविधि मन्त्रालय</h2>
       <p class="header-address">सिंहदरबार, काठमाडौं</p>
+      <br>
       <h1>{title}</h1> 
       <p>Randomly generated using center-randomize project by MOEST, Government of Nepal</p>
     </div>
@@ -152,7 +162,9 @@ def generate_pdf(results_data,filename,title):
     """
 
     # Generate the PDF from the HTML content
-    pdfkit.from_string(html_template, f"{filename}.pdf", options={'encoding': 'utf-8'})
+    if not os.path.exists(DOWNLOAD_DIR):
+        os.mkdir(DOWNLOAD_DIR)
+    pdfkit.from_string(html_template, f"{DOWNLOAD_DIR}/{filename}.pdf", options={'encoding': 'utf-8'})
     st.success(f"Successfully Downloaded {filename}.pdf!")
 
 #Function to filter the data
@@ -255,8 +267,6 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
     # Download Button
 
     def download_handler():
-        print(df_school_center.columns)
-        print(df_school_center_distance.columns)
         generate_pdf(df_school_center.drop(['center_lat','center_long'],axis=1), "school_center", "School Center")
         generate_pdf(df_school_center_distance.drop(['school_lat','school_long'],axis=1),"school_center_distance","School Center Distance")
     st.button("Download Results as PDF!", on_click=download_handler)
