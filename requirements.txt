@@ -9,3 +9,4 @@ streamlit_folium==0.19.1
 folium==0.16.0
 wkhtmltopdf==0.2
 pdfkit==1.0.0
+Flask==3.0.2
