@@ -2,12 +2,13 @@
 The goal of this script is to assign __exam centers__ to students.
 
 ## Steps
-1. Prepare input files in the specified format.
-2. Run the program and re-run if - 
+1. Open terminal in the same folder as the project and run "pip install -r requirements.txt"
+2. Prepare input files in the specified format.
+3. Run the program and re-run if - 
    * Any school has students who have not been assigned a center.
    * Distribution across centers is uneven.
-3. Perform sanity checks of distributed centers.
-4. Manually reassign impractical centers and odd lot allocations. Keep changes to a minimum. 
+4. Perform sanity checks of distributed centers.
+5. Manually reassign impractical centers and odd lot allocations. Keep changes to a minimum. 
 
 ## Allocation Guidelines
 
