@@ -138,6 +138,7 @@ def generate_pdf(results_data,filename,title):
     <body>
   <header id="main-header">
        <div class="header-text-container">
+      <img src='https://avatars.githubusercontent.com/u/167545222?s=200&v=4' height= '90px'>
       <h1 class="header-title">नेपाल सरकार</h1>
       <h2 class="header-subtitle">शिक्षा, विज्ञान तथा प्रविधि मन्त्रालय</h2>
       <p class="header-address">सिंहदरबार, काठमाडौं</p>
