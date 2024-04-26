@@ -7,3 +7,5 @@ pytest-cov==5.0.0
 streamlit==1.33.0
 streamlit_folium==0.19.1
 folium==0.16.0
+wkhtmltopdf==0.2
+pdfkit==1.0.0
