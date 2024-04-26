@@ -5,6 +5,7 @@ import subprocess
 import pandas as pd
 import streamlit as st
 from streamlit_folium import st_folium
+import pdfkit
 
 #Page Setup
 st.set_page_config(
@@ -82,6 +83,76 @@ else:
 def run_center_randomizer(schools_tsv, centers_tsv, prefs_tsv):
     cmd = f"python school_center.py {schools_tsv} {centers_tsv} {prefs_tsv}"
     subprocess.run(cmd, shell=True)
+
+
+def generate_pdf(results_data,filename,title):
+    st.toast("Generating Pdf..")
+    st.write("Generating pdf...")
+
+    # Convert DataFrame to HTML with modern table styling
+    html_content = results_data.to_html(index=False, classes=['modern-table'])
+
+    # HTML template for the PDF content
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>School Center</title>
+        <style>
+            /* Modern table styling */
+            .modern-table {{
+                width: 100%;
+                border-collapse: collapse;
+                border-spacing: 0;
+            }}
+            .modern-table th,
+            .modern-table td {{
+                border: 1px solid #e0e0e0;
+                padding: 10px;
+                text-align: center;
+            }}
+            .modern-table th {{
+                background-color: #f8f8f8;
+                color: #333333;  /* Header text color */
+                font-weight: bold;  /* Bold header text */
+                text-transform: uppercase;  /* Uppercase header text */
+                letter-spacing: 1px;  /* Increased letter spacing for header text */
+            }}
+            .modern-table tr:nth-child(even) {{
+                background-color: #f2f2f2;
+            }}
+            .modern-table tr:hover {{
+                background-color: #eaeaea;
+            }}
+           #main-header {{
+         display: flex;
+        align-items: center; /* Added align-items to center vertically */
+        justify-content: center;
+    }}
+ 
+    .header-text-container {{
+    text-align: center;
+    }}
+        </style>
+    </head>
+    <body>
+  <header id="main-header">
+       <div class="header-text-container">
+      <h1 class="header-title">नेपाल सरकार</h1>
+      <h2 class="header-subtitle">शिक्षा, विज्ञान तथा प्रविधि मन्त्रालय</h2>
+      <p class="header-address">सिंहदरबार, काठमाडौं</p>
+      <h1>{title}</h1> 
+      <p>Randomly generated using center-randomize project by MOEST, Government of Nepal</p>
+    </div>
+  </header>
+        {html_content}
+    </body>
+    </html>
+    """
+
+    # Generate the PDF from the HTML content
+    pdfkit.from_string(html_template, f"{filename}.pdf", options={'encoding': 'utf-8'})
+    st.success(f"Successfully Downloaded {filename}.pdf!")
 
 #Function to filter the data
 def filter_data(df, filter_type, filter_value):
@@ -169,13 +240,23 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
         tab1.divider()
         tab1.subheader('All Data')
         tab1.dataframe(df_school_center)
+
+
+
     else:
         tab1.info("No calculated data available.", icon="ℹ️")
     
     if 'school_center_distance' in st.session_state.calculated_data:
-        df = pd.read_csv(st.session_state.calculated_data['school_center_distance'], sep="\t")
-        tab2.dataframe(df)
+        df_school_center_distance = pd.read_csv(st.session_state.calculated_data['school_center_distance'], sep="\t")
+        tab2.dataframe(df_school_center_distance)
     else:
         tab2.error("School Center Distance file not found.")
+    # Download Button
+
+    def download_handler():
+        generate_pdf(df_school_center, "school_center", "School Center")
+        generate_pdf(df_school_center_distance,"school_center_distance","School Center Distance")
+    st.button("Download Results as PDF!", on_click=download_handler)
+
 elif st.session_state.calculate_clicked and not st.session_state.calculated_data:
     tab1.error("School Center data not found in session state.")
