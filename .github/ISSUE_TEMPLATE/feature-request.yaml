@@ -1,0 +1,55 @@
+name: Feature Request / Enhancement
+description: Suggest a new feature or feature enhancement for the project
+labels: ["enhancement", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ Please fill out all required sections for your feature request and ensure it has not been suggested before in the discussion or issue tab.
+
+  - type: textarea
+    id: feature-description
+    validations:
+      required: true
+    attributes:
+      label: 🔖 Feature description
+      description: A clear and concise description of what the feature request is.
+      placeholder: You should add ...
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Describe alternatives you've considered
+      placeholder: A clear and concise description of any alternative solutions or features you've considered
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      placeholder: |
+        Add any other context or screenshots about the feature request here.
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Acknowledgements
+      description: 'Please confirm the following:'
+      options:
+        - label: My issue title is clear and descriptive.
+          required: true
+        - label: I have checked existing issues to ensure this feature is not requested yet.
+          required: true
+        - label: I have provided sufficient details for maintainers to understand and assess this request.
+          required: true
+
+  - type: dropdown
+    id: assign
+    attributes:
+      label: Would you like to work on this issue?
+      options:
+        - "Yes"
+
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your suggestion! Let's work together to see if we can implement it.
