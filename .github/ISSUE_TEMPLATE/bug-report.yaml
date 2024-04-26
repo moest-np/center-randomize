@@ -21,7 +21,7 @@ body:
     id: reproduce
     attributes:
       label: Steps to reproduce
-      Description:
+      description:
         Please provide a detailed account of the steps necessary to reproduce the issue. 
         The more specific you are, the better chance we have of identifying and resolving the bug. 
         Kindly list your tasks and/or queries in text format instead of using screenshots.
