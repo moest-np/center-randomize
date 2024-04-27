@@ -1,0 +1,43 @@
+name: Custom Issue
+description: Create a custom issue
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Before you start
+        > Please **make sure you are on the latest version.**
+        Please fill out the sections below to describe your issue or request.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Provide a brief summary of your issue or request.
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Provide detailed information about your issue or request.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution (if applicable)
+      description: Describe your proposed solution or idea, if applicable.
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots (optional)
+      description: |
+        Include screenshots or other visuals to help illustrate your issue or request, if applicable.
+
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for providing your issue or request! We will review it and get back to you as soon as possible.
