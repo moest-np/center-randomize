@@ -19,10 +19,11 @@ Thank you for considering contributing to our project! We welcome contributions 
 
 1. Fork and clone the Repository
 2. Pull latest changes from the main repository if it has diverged
-3. [Create a virtual environment for the project](https://docs.python.org/3/library/venv.html)
-4. Install dependencies using `pip install -r requirements.txt`
-5. Install pre-commit hook using `pre-commit install`
-6. Run tests using `pytest tests/test_file_name.py ` or specific test name like `pytest tests/test_file_name.py::test_function_name`
+3. Add Rye on your system if it is not installed already. [Source](https://rye-up.com/guide/installation/)
+4. Install all the dependencies using `rye sync`.
+5. Install pre-commit hook using `rye run pre-commit install`
+6. Run `rye add package_name` (if you wish to add any packages as per your requirements.)
+6. Run tests using `rye run pytest` or `rye run pytest -k test_function_name -v` to run specific file.
 7. Do not push changes without the tests and coverage passing
 8. Commit your changes with **proper** commit messages in imperative form like `Add my best feature`, `Fix issues casusing whatever`, `Update docs` etc: [Good reference here](https://cbea.ms/git-commit/)
 9. Make changes and push to your forked repository

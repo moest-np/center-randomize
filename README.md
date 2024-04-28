@@ -71,7 +71,7 @@ scode	cscode	pref	reason
 To run `school_center.py` use the command below:
 
 ```bash
-python3 school_center.py sample_data/schools_grade12_2081.tsv sample_data/centers_grade12_2081.tsv sample_data/prefs.tsv
+rye run python -m school_center sample_data/schools_grade12_2081.tsv sample_data/centers_grade12_2081.tsv sample_data/prefs.tsv
 ```
 
 ## Output
