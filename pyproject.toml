@@ -6,12 +6,12 @@ authors = [
     { name = "Manisha Bhandari", email = "manishabhandari841@gmail.com" }
 ]
 dependencies = [
-    "streamlit==1.33.0",
     "streamlit-folium==0.19.1",
     "folium==0.16.0",
+    "streamlit>=1.33.0",
 ]
 readme = "README.md"
-requires-python = ">= 3.12"
+requires-python = ">= 3.8"
 
 [build-system]
 requires = ["hatchling"]
