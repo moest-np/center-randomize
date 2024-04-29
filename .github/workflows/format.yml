@@ -1,0 +1,49 @@
+name: Python Code Formatter
+
+on:
+    pull_request:
+        branches:
+            - main
+
+jobs:
+    format:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.head_ref }}
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: 3.11
+
+            - name: Install Black
+              run: pip install black
+
+            - name: Run Black
+              run: black --check .
+
+            - name: If needed, commit changes
+              run: |
+                  git config --global user.name 'GitHub Actions'
+                  git config --global user.email 'actions@github.com'
+                  git diff --quiet || (git add -u && git commit -m "Format code using Black")
+                  git push
+
+            - name: Comment on PR
+              uses: actions/github-script@v7
+              with:
+                  github-token: ${{secrets.GITHUB_TOKEN}}
+                  script: |
+                      const issue_number = context.issue.number;
+                      const repository = context.repo;
+                      const comment_body = "The code has been formatted using Black.";
+                      github.rest.issues.createComment({
+                        ...repository,
+                        issue_number: issue_number,
+                        body: comment_body
+                      });
