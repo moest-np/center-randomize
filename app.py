@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 from streamlit_folium import st_folium
 
+
 #Page Setup
 st.set_page_config(
    page_title="MOEST Exam Center Calculator",
@@ -14,6 +15,18 @@ st.set_page_config(
    layout="wide",
    initial_sidebar_state="expanded",
 )
+
+#  Custom CSS 
+custom_css = """
+<style>
+.st-ag.st-e4.st-e5 {
+    flex-direction: row !important;
+}
+</style>
+"""
+
+# Render custom CSS
+st.markdown(custom_css, unsafe_allow_html=True)
 
 # Session setup
 if 'calculate_clicked' not in st.session_state:
@@ -26,7 +39,6 @@ if 'filter_type' not in st.session_state:
     st.session_state.filter_type = None
 if 'filter_value' not in st.session_state:
     st.session_state.filter_value = None
-
 
 #Maps setup
 m = folium.Map(location=[27.7007, 85.3001], zoom_start=12, )
@@ -141,15 +153,28 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
     # Display data from session state
     if 'school_center' in st.session_state.calculated_data:
         df_school_center = pd.read_csv(st.session_state.calculated_data['school_center'], sep="\t")
-        allowed_filter_types = ['scode', 'school', 'cscode', 'center']
+        allowed_filter_types = ['school', 'center']
         st.session_state.filter_type = tab1.radio("Choose a filter type:", allowed_filter_types)
 
         # Display an input field based on the selected filter type
         if st.session_state.filter_type:
-            st.session_state.filter_value = tab1.selectbox(f"Select a value for {st.session_state.filter_type}:", df_school_center[st.session_state.filter_type].unique())
-        # Filter the DataFrame based on the selected filter type and value
+            if st.session_state.filter_type == 'school':
+                # Create filter options with school name and code
+                filter_options = [f"{name} | [{code}]" for name, code in zip(df_school_center['school'], df_school_center['scode'])]
+                 # Display a selectbox for school selection
+                st.session_state.filter_value = tab1.selectbox(f"Select a value for {st.session_state.filter_type}:", filter_options)
+                # Split the selected value to extract school name and code
+                school_name_with_address, school_code = st.session_state.filter_value.split(' | ')
+                # Filter the DataFrame based on school name
+                filtered_df = filter_data(df_school_center, 'school', school_name_with_address)
+      
+            elif st.session_state.filter_type == 'center':
+                center_filter_options = [f"{name} | [{code}]" for name, code in zip(df_school_center['center'], df_school_center['cscode'])]
+                st.session_state.filter_value = tab1.selectbox(f"Select a value for {st.session_state.filter_type}:", center_filter_options)
+                center_name, centre_code = st.session_state.filter_value.split(' | ')
+                filtered_df = filter_data(df_school_center, 'center', center_name)
+
         if st.session_state.filter_value:
-            filtered_df = filter_data(df_school_center, st.session_state.filter_type, st.session_state.filter_value)
             tab1.dataframe(filtered_df)
             tab1.subheader('Map')
             tab1.divider()
@@ -177,5 +202,6 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
         tab2.dataframe(df)
     else:
         tab2.error("School Center Distance file not found.")
+
 elif st.session_state.calculate_clicked and not st.session_state.calculated_data:
     tab1.error("School Center data not found in session state.")
