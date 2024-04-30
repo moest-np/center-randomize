@@ -158,21 +158,22 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
 
         # Display an input field based on the selected filter type
         if st.session_state.filter_type:
-            if st.session_state.filter_type == 'school':
-                # Create filter options with school name and code
-                filter_options = [f"{name} | [{code}]" for name, code in zip(df_school_center['school'], df_school_center['scode'])]
-                 # Display a selectbox for school selection
-                st.session_state.filter_value = tab1.selectbox(f"Select a value for {st.session_state.filter_type}:", filter_options)
-                # Split the selected value to extract school name and code
-                school_name_with_address, school_code = st.session_state.filter_value.split(' | ')
-                # Filter the DataFrame based on school name
-                filtered_df = filter_data(df_school_center, 'school', school_name_with_address)
-      
-            elif st.session_state.filter_type == 'center':
-                center_filter_options = [f"{name} | [{code}]" for name, code in zip(df_school_center['center'], df_school_center['cscode'])]
-                st.session_state.filter_value = tab1.selectbox(f"Select a value for {st.session_state.filter_type}:", center_filter_options)
-                center_name, centre_code = st.session_state.filter_value.split(' | ')
-                filtered_df = filter_data(df_school_center, 'center', center_name)
+         if st.session_state.filter_type == 'school':
+          # Create filter options with school name and code
+          filter_options = [f"{name} | [{code}]" for name, code in zip(df_school_center['school'], df_school_center['scode'])]
+
+         elif st.session_state.filter_type == 'center':
+          # Create filter options with center name and code
+          filter_options = [f"{name} | [{code}]" for name, code in zip(df_school_center['center'], df_school_center['cscode'])]
+
+         # Display a selectbox for selection
+         st.session_state.filter_value = tab1.selectbox(f"Select a value for {st.session_state.filter_type}:", filter_options)
+
+         # Split the selected value to extract name and code
+         name, code = st.session_state.filter_value.split(' | ')
+
+         # Filter the DataFrame based on the selected type and value
+         filtered_df = filter_data(df_school_center, st.session_state.filter_type, name)
 
         if st.session_state.filter_value:
             tab1.dataframe(filtered_df)
