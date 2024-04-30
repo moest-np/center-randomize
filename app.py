@@ -160,11 +160,11 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
         if st.session_state.filter_type:
          if st.session_state.filter_type == 'school':
           # Create filter options with school name and code
-          filter_options = [f"{name} | [{code}]" for name, code in zip(df_school_center['school'], df_school_center['scode'])]
+          filter_options = [f"{name} | [{code}]" for name, code in zip(df_school_center['school'].unique(), df_school_center['scode'].unique())]
 
          elif st.session_state.filter_type == 'center':
           # Create filter options with center name and code
-          filter_options = [f"{name} | [{code}]" for name, code in zip(df_school_center['center'], df_school_center['cscode'])]
+          filter_options = [f"{name} | [{code}]" for name, code in zip(df_school_center['center'].unique(), df_school_center['cscode'].unique())]
 
          # Display a selectbox for selection
          st.session_state.filter_value = tab1.selectbox(f"Select a value for {st.session_state.filter_type}:", filter_options)
@@ -176,7 +176,7 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
          filtered_df = filter_data(df_school_center, st.session_state.filter_type, name)
 
         if st.session_state.filter_value:
-            tab1.dataframe(filtered_df)
+            tab1.dataframe(filtered_df, hide_index=True)
             tab1.subheader('Map')
             tab1.divider()
             for index, center in filtered_df.iterrows():
