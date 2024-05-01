@@ -34,7 +34,7 @@ class TestSchoolCenter(unittest.TestCase):
         self.school_center_distace_file = "results/school-center-distance.tsv"
         self.school_center_pref_file = "sample_data/prefs.tsv"
 
-    def test_scode_student_count_not_more_than_200(self) -> bool:
+    def test_scode_student_count_not_more_than_200(self):
         """_Test if the student count is not more than 200_
           Test case ID 001:- एक विद्यालयको परिक्षार्थी संख्या हेरी सकभर १००, २०० भन्दा बढी
                              परीक्षार्थी एकै केन्द्रमा नपर्ने गरी बाँढ्न पर्ने
@@ -59,7 +59,7 @@ class TestSchoolCenter(unittest.TestCase):
         if failures:
             raise AssertionError(failures)
 
-    def test_scode_cscode_not_same(self) -> bool:
+    def test_scode_cscode_not_same(self):
         """_Test if the output of scode is not equal to cscode_
           Test case ID :- आफ्नै विद्यालयमा केन्द्र पार्न नहुने
 
@@ -76,7 +76,7 @@ class TestSchoolCenter(unittest.TestCase):
                 scode, cscode, f"scode and cscode are same for row {row}"
             )
 
-    def test_scodes_cscode_not_same_as_cscodes_scode(self) -> bool:
+    def test_scodes_cscode_not_same_as_cscodes_scode(self):
         """_Test if the scode's center is not same as cscode's
             centre and vice versa_
           Test case ID :- दुई विद्यालयका परीक्षार्थीको केन्द्र एक अर्कामा पर्न नहुने, अर्थात् कुनै विद्यालयका परीक्षार्थीको केन्द्र परेको विद्यालयका परीक्षार्थीहरूको केन्द्र अघिल्लो विद्यालयमा पार्न नहुने ।
@@ -101,7 +101,7 @@ class TestSchoolCenter(unittest.TestCase):
             f"Duplicate values found in scode_center_code: {', '.join(duplicates)}",
         )
 
-    def test_center_schools_same_management(self) -> bool:
+    def test_center_schools_same_management(self):
         """_Test if the schools under same management do not have the coinciding center_
           Test case ID :- एकै स्वामित्व / व्यवस्थापनको भनी पहिचान भएका केन्द्रमा पार्न नहुने
 
@@ -134,7 +134,7 @@ class TestSchoolCenter(unittest.TestCase):
         if failures:
             raise AssertionError(failures)
 
-    def test_center_schools_problematic_history(self) -> bool:
+    def test_center_schools_problematic_history(self):
         """_Test if the schools with problemetic history do not have the coinciding center_
           Test case ID :- विगतमा कुनै विद्यालयको कुनै केन्द्रमा पार्दा समस्या देखिएकोमा केन्द्र नदोहोऱ्याउन नहुने
 
