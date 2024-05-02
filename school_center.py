@@ -46,10 +46,10 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     return distance
 
 
-def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], distance_threshold: float) -> List[Dict[str, any]]:
+def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], distance_threshold: float, relax_threshold: bool) -> List[Dict[str, any]]:
     """
     Return List of centers that are within given distance from school.
-    If there are no centers within given distance return one that is closest
+    relax_threshold: If there are no centers within given distance return one that is closest
     Returned params :
             {'cscode', 'name', 'address', 'capacity', 'lat', 'long', 'distance_km'}
 
@@ -64,50 +64,37 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
                  'distance_km': distance}
 
     def sort_key(c):
-        return c['distance_km'] * random.uniform(1, 5) - get_pref(school['scode'], c['cscode']) * 100
-    
-
         # intent: sort by preference score DESC then by distance_km ASC
         # leaky abstraction - sorted requires a single numeric value for each element
-        return c['distance_km'] * random.uniform(1, 5) - get_pref(school['scode'], c['cscode'])*100
-
+        return c['distance_km'] * random.uniform(1, 5) - get_pref(school['scode'], c['cscode']) * 100
+    
     school_lat = school.get('lat')
     school_long = school.get('long')
     if len(school_lat) == 0 or len(school_long) == 0:
         return []
 
-    within_distance = []
-    nearest_distance = None
-    nearest_center = None
+    qualifying_centers = []
+    # nearest_distance = None
+    # nearest_center = None
     for c in centers:
+        if school['scode'] == c['cscode'] \
+            or is_allocated(c['cscode'], s['scode']) \
+            or get_pref(school['scode'], c['cscode']) <= PREF_CUTOFF:
+            continue
         distance = haversine_distance(float(school_lat), float(
             school_long), float(c.get('lat')), float(c.get('long')))
-        if school['scode'] == c['cscode']:
-            continue
-        if nearest_center is None or distance < nearest_distance:
-            nearest_center = c
-            nearest_distance = distance
+        # if nearest_center is None or distance < nearest_distance:
+        #     nearest_center = c
+        #     nearest_distance = distance
+        qualifying_centers.append(center_to_dict(c, distance))
 
-        if distance <= distance_threshold and get_pref(school['scode'], c['cscode']) > PREF_CUTOFF:
-            within_distance.append(center_to_dict(c, distance))
-
+    within_distance = [ c for c in qualifying_centers if c['distance_km'] <= distance_threshold ]
     if len(within_distance) > 0:
-
         return sorted(within_distance, key=sort_key) 
+    elif relax_threshold: # if there are no centers within given threshold, return one that is closest
+        return sorted(qualifying_centers, key=sort_key) 
     else: 
-        # If no centers within the preferred distance and above the preference cutoff,
-        # return centers sorted by preference score and distance, excluding those below PREF_CUTOFF
-        all_centers = [center_to_dict(c, haversine_distance(float(school_lat), float(school_long), float(c.get('lat')), float(c.get('long')))) for c in centers if school['scode'] != c['cscode']]
-        qualified_centers = [c for c in all_centers if get_pref(school['scode'], c['cscode']) > PREF_CUTOFF]
-        if qualified_centers:
-            return sorted(qualified_centers, key=sort_key)
-        else:
-            return [center_to_dict(nearest_center, nearest_distance)]
-
-        return sorted(within_distance, key=sort_key)
-    else:  # if there are no centers within given  threshold, return one that is closest
-        return [center_to_dict(nearest_center, nearest_distance)]
-
+        return []
 
 def read_tsv(file_path: str) -> List[Dict[str, str]]:
     """
@@ -247,7 +234,7 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
 
     for s in schools:
         centers_for_school = centers_within_distance(
-            s, centers, PREF_DISTANCE_THRESHOLD)
+            s, centers, PREF_DISTANCE_THRESHOLD, False)
         to_allot = int(s['count'])
         per_center = calc_per_center(to_allot)
 
@@ -265,8 +252,6 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
                              c['address'], 
                              c['capacity'], 
                              c['distance_km']])
-            if is_allocated(c['cscode'], s['scode']):
-                continue
             next_allot = min(to_allot, per_center, max(
                 centers_remaining_cap[c['cscode']], MIN_STUDENT_IN_CENTER))
             if to_allot > 0 and next_allot > 0 and centers_remaining_cap[c['cscode']] >= next_allot:
@@ -278,10 +263,8 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
 
         if to_allot > 0:  # try again with relaxed constraints and more capacity at centers
             expanded_centers = centers_within_distance(
-                s, centers, ABS_DISTANCE_THRESHOLD)
+                s, centers, ABS_DISTANCE_THRESHOLD, True)
             for c in expanded_centers:
-                if is_allocated(c['cscode'], s['scode']):
-                    continue
                 stretched_capacity = math.floor(
                     int(c['capacity']) * STRETCH_CAPACITY_FACTOR + centers_remaining_cap[c['cscode']])
                 next_allot = min(to_allot, max(
@@ -304,7 +287,7 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
 
         if to_allot > 0:
             remaining += to_allot
-            logger.warn(
+            logger.warning(
                 f"{to_allot}/{s['count']} left for {s['scode']} {s['name-address']} centers: {len(centers_for_school)}")
 
     logger.info("Remaining capacity at each center (remaining_capacity cscode):")
