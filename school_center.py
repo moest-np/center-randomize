@@ -1,6 +1,6 @@
 from utils.custom_logger import configure_logging
 from typing import Dict, List
-import os
+from os import sys, path, makedirs
 import argparse
 import logging
 import random
@@ -13,18 +13,12 @@ ABS_DISTANCE_THRESHOLD = 7      # Absolute threshold distance in km
 MIN_STUDENT_IN_CENTER = 10      # Min. no of students from a school to be assigned to a center in normal circumstances
 STRETCH_CAPACITY_FACTOR = 0.02  # How much can center capacity be streched if need arises
 PREF_CUTOFF = -4                # Do not allocate students with pref score less than cutoff
+DEFAULT_OUTPUT_DIR = 'results'  # Default directory to create output files if --output not provided
+DEFAULT_OUTPUT_FILENAME = 'school-center.tsv'
 
 configure_logging()
 logger = logging.getLogger(__name__)
 
-
-def create_dir(dirPath: str):
-    """
-    Create the given directory if it doesn't exists
-    - Creates all the directories needed to resolve to the provided directory path
-    """
-    if not os.path.exists(dirPath):
-        os.makedirs(dirPath)
 
 
 def haversine_distance(lat1, lon1, lat2, lon2):
@@ -102,10 +96,23 @@ def read_tsv(file_path: str) -> List[Dict[str, str]]:
     Return a list of schools/centers as dicts.
     """
     data = []
-    with open(file_path, 'r', newline='', encoding='utf-8') as file:
-        reader = csv.DictReader(file, delimiter='\t')
-        for row in reader:
-            data.append(dict(row))
+    try:
+        with open(file_path, 'r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file, delimiter='\t')
+            for row in reader:
+                data.append(dict(row))
+    except FileNotFoundError:
+        logger.error(f"File '{file_path}' not found.")
+        sys.exit(1)
+    except PermissionError:
+        logger.error(f"Permission denied while accessing file '{file_path}'.")
+        sys.exit(1)
+    except IOError:
+        logger.error(f"Error opening or reading file: {file_path}")
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred while reading file '{file_path}': {e}")
+        sys.exit(1)
     return data
 
 
@@ -115,17 +122,29 @@ def read_prefs(file_path: str) -> Dict[str, Dict[str, int]]:
     Return a dict of dicts key scode and then cscode
     """
     prefs = {}
-    with open(file_path, 'r', newline='', encoding='utf-8') as file:
-        reader = csv.DictReader(file, delimiter='\t')
-        for row in reader:
-            if prefs.get(row['scode']):
-                if prefs[row['scode']].get(row['cscode']):
-                    prefs[row['scode']][row['cscode']] += int(row['pref'])
+    try:
+        with open(file_path, 'r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file, delimiter='\t')
+            for row in reader:
+                if prefs.get(row['scode']):
+                    if prefs[row['scode']].get(row['cscode']):
+                        prefs[row['scode']][row['cscode']] += int(row['pref'])
+                    else:
+                        prefs[row['scode']][row['cscode']] = int(row['pref'])
                 else:
-                    prefs[row['scode']][row['cscode']] = int(row['pref'])
-            else:
-                prefs[row['scode']] = {row['cscode']: int(row['pref'])}
-
+                    prefs[row['scode']] = {row['cscode']: int(row['pref'])}
+    except FileNotFoundError:
+        logger.error(f"File '{file_path}' not found.")
+        sys.exit(1)
+    except PermissionError:
+        logger.error(f"Permission denied while accessing file '{file_path}'.")
+        sys.exit(1)
+    except IOError:
+        logger.error(f"Error opening or reading file: {file_path}")
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred while reading file '{file_path}': {e}")
+        sys.exit(1)
     return prefs
 
 
@@ -189,8 +208,8 @@ parser.add_argument('centers_tsv', default='centers.tsv',
                     help="Tab separated (TSV) file containing center details")
 parser.add_argument('prefs_tsv', default='prefs.tsv',
                     help="Tab separated (TSV) file containing preference scores")
-parser.add_argument(
-    '-o', '--output', default='school-center.tsv', help='Output file')
+parser.add_argument('-o', '--output', default = DEFAULT_OUTPUT_FILENAME, 
+                    help='Output file')
 parser.add_argument('-s', '--seed', action='store', metavar='SEEDVALUE',
                      default=None, type=float, 
                      help='Initialization seed for Random Number Generator')
@@ -207,10 +226,28 @@ prefs = read_prefs(args.prefs_tsv)
 remaining = 0       # stores count of non allocated students
 allocations = {}    # to track mutual allocations
 
-OUTPUT_DIR = 'results/'
-create_dir(OUTPUT_DIR)  # Create the output directory if not exists
-with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-8') as intermediate_file, \
-        open(OUTPUT_DIR + args.output, 'w', encoding='utf-8') as a_file:
+
+def get_output_dir():
+    dirname = path.dirname(args.output)
+    if(dirname):
+        return dirname
+    else:
+        return DEFAULT_OUTPUT_DIR
+
+def get_output_filename():
+    basename = path.basename(args.output)
+    if(basename):
+        return basename
+    else:
+        return DEFAULT_OUTPUT_FILENAME
+
+
+output_dirname = get_output_dir()
+output_filename = get_output_filename()
+makedirs(output_dirname, exist_ok=True) # Create the output directory if not exists
+
+with open(path.join(output_dirname, "school-center-distance.tsv"), 'w', encoding='utf-8') as intermediate_file, \
+open(path.join(output_dirname, output_filename), 'w', encoding='utf-8') as a_file:
     writer = csv.writer(intermediate_file, delimiter="\t")
     writer.writerow(["scode", 
                      "s_count", 
@@ -229,6 +266,8 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
                               "cscode", 
                               "center", 
                               "center_address", 
+                              "center_lat",
+                              "center_long",
                               "allocation", 
                               "distance_km"])
 
@@ -282,6 +321,8 @@ with open('{}school-center-distance.tsv'.format(OUTPUT_DIR), 'w', encoding='utf-
                                       c['cscode'], 
                                       c['name'],
                                       c['address'], 
+                                      c['lat'],
+                                      c['long'],
                                       allocations[s['scode']][c['cscode']], 
                                       c['distance_km']])
 

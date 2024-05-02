@@ -2,12 +2,12 @@
 The goal of this script is to assign __exam centers__ to students.
 
 ## Steps
-1. Prepare input files in specified format.
-2. Run program and re run if - 
-   * Any school has students that have not been assigned a center.
+1. Prepare input files in the specified format.
+2. Run the program and re-run if - 
+   * Any school has students who have not been assigned a center.
    * Distribution across centers is uneven.
-3. Perform sanity check of distributed centers.
-4. Manually reassign impractical centers and odd lot allocations. Keep changes to minimum. 
+3. Perform sanity checks of distributed centers.
+4. Manually reassign impractical centers and odd lot allocations. Keep changes to a minimum. 
 
 ## Allocation Guidelines
 
