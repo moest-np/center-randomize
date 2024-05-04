@@ -5,6 +5,16 @@ import subprocess
 import pandas as pd
 import streamlit as st
 from streamlit_folium import st_folium
+import pdfkit
+
+
+#Constants
+DOWNLOAD_DIR="generated-pdfs"
+STATIC_FILE_SERVER_HOST="http://localhost"
+STATIC_FILE_SERVER_PORT=int(os.getenv('PORT',8005))
+
+
+subprocess.Popen(['python3','file-server.py'])
 
 #Page Setup
 st.set_page_config(
@@ -82,6 +92,88 @@ else:
 def run_center_randomizer(schools_tsv, centers_tsv, prefs_tsv):
     cmd = f"python school_center.py {schools_tsv} {centers_tsv} {prefs_tsv}"
     subprocess.run(cmd, shell=True)
+
+
+def generate_pdf(results_data,filename,title):
+    st.toast("Generating Pdf..")
+    st.write("Generating pdf...")
+
+    # Convert DataFrame to HTML with modern table styling
+    html_content = results_data.to_html(index=False, classes=['modern-table'])
+
+    # HTML template for the PDF content
+
+    # Generate the PDF from the HTML content
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>  
+        <title>School Center</title>
+        <style>
+            * {{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;  
+            }}
+            /* Modern table styling */
+            .modern-table {{
+                width: 100%;
+                border-collapse: collapse;
+                border-spacing: 0;
+            }}
+            .modern-table th,
+            .modern-table td {{
+                border: 1px solid #e0e0e0;
+                padding: 10px;
+                text-align: center;
+            }}
+            .modern-table th {{
+                background-color: #f8f8f8;
+                color: #333333; 
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }}
+            .modern-table tr:nth-child(even) {{
+                background-color: #f2f2f2;
+            }}
+            .modern-table tr:hover {{
+                background-color: #eaeaea;
+            }}
+           #main-header {{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 20px;
+            }}
+ 
+            .header-text-container {{
+                text-align: center;
+            }}
+        </style>
+    </head>
+    <body>
+  <header id="main-header">
+       <div class="header-text-container">
+      <img src='https://avatars.githubusercontent.com/u/167545222?s=200&v=4' height= '90px'>
+      <h1 class="header-title">नेपाल सरकार</h1>
+      <h2 class="header-subtitle">शिक्षा, विज्ञान तथा प्रविधि मन्त्रालय</h2>
+      <p class="header-address">सिंहदरबार, काठमाडौं</p>
+      <br>
+      <h1>{title}</h1> 
+      <p>Randomly generated using center-randomize project by MOEST, Government of Nepal</p>
+    </div>
+  </header>
+        {html_content}
+    </body>
+    </html>
+    """
+    if not os.path.exists(DOWNLOAD_DIR):
+        os.mkdir(DOWNLOAD_DIR)
+    pdfkit.from_string(html_template, f"{DOWNLOAD_DIR}/{filename}.pdf", options={'encoding': 'utf-8'})
+    st.success(f"Successfully Downloaded {filename}.pdf!")
+    st.session_state.downloaded = True
+    st.session_state.school_center_pdf_link = f"{STATIC_FILE_SERVER_HOST}:{STATIC_FILE_SERVER_PORT}/{DOWNLOAD_DIR}/{filename}.pdf"
 
 #Function to filter the data
 def filter_data(df, filter_type, filter_value):
@@ -165,17 +257,47 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
             m.add_child(fg)
             with tab1:
                 st_folium( m, width=1200, height=400 )
-        
+
         tab1.divider()
         tab1.subheader('All Data')
         tab1.dataframe(df_school_center)
+
+
+
     else:
         tab1.info("No calculated data available.", icon="ℹ️")
-    
+
     if 'school_center_distance' in st.session_state.calculated_data:
-        df = pd.read_csv(st.session_state.calculated_data['school_center_distance'], sep="\t")
-        tab2.dataframe(df)
+        df_school_center_distance = pd.read_csv(st.session_state.calculated_data['school_center_distance'], sep="\t")
+        tab2.dataframe(df_school_center_distance)
     else:
         tab2.error("School Center Distance file not found.")
+    # Download Button
+
+    def download_handler():
+        generate_pdf(df_school_center.drop(['center_lat','center_long'],axis=1), "school_center", "School Center")
+        generate_pdf(df_school_center_distance.drop(['school_lat','school_long'],axis=1),"school_center_distance","School Center Distance")
+    st.button("Download Results as PDF!", on_click=download_handler)
+    try:
+        if st.session_state.downloaded:
+            school_center_download_button_html = f"""
+                <a href={st.session_state.school_center_pdf_link}>
+                <button style='background-color: #4CAF50; /* Green */ border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 4px; cursor: pointer; border-radius: 5px;'>
+                <img src="https://img.icons8.com/ios-filled/50/000000/pdf.png" style="vertical-align: middle; width: 20px; height: 20px; margin-right: 5px;">
+                View PDF: school_center.pdf
+                </button>
+            """
+            school_center_distance_download_button_html = f"""
+                    <a href={st.session_state.school_center_pdf_link}>
+                    <button class='download-button' style='background-color: #4CAF50; /* Green */ border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 4px; cursor: pointer; border-radius: 5px;'>
+                    <img src="https://img.icons8.com/ios-filled/50/000000/pdf.png" style="vertical-align: middle; width: 20px; height: 20px; margin-right: 5px;">
+                    View PDF: School_center_distance.pdf
+                    </button>
+                """
+            st.markdown(school_center_download_button_html, unsafe_allow_html=True)
+            st.markdown(school_center_distance_download_button_html, unsafe_allow_html=True)
+    except AttributeError:
+        print("Has not been downloaded yet..")
+
 elif st.session_state.calculate_clicked and not st.session_state.calculated_data:
     tab1.error("School Center data not found in session state.")
