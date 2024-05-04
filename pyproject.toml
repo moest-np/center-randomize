@@ -28,6 +28,9 @@ dev-dependencies = [
     "pre-commit==3.6.0",
 ]
 
+[tool.rye.scripts]
+dev = { cmd = "python -m school_center sample_data/schools_grade12_2081.tsv sample_data/centers_grade12_2081.tsv sample_data/prefs.tsv", env = {} }
+
 [tool.hatch.metadata]
 allow-direct-references = true
 
