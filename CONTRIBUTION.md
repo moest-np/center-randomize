@@ -23,10 +23,11 @@ Thank you for considering contributing to our project! We welcome contributions 
 4. Install dependencies using `pip install -r requirements.txt`
 5. Install pre-commit hook using `pre-commit install`
 6. Run tests using `pytest tests/test_file_name.py ` or specific test name like `pytest tests/test_file_name.py::test_function_name`
-7. Do not push changes without the tests and coverage passing
-8. Commit your changes with **proper** commit messages in imperative form like `Add my best feature`, `Fix issues casusing whatever`, `Update docs` etc: [Good reference here](https://cbea.ms/git-commit/)
-9. Make changes and push to your forked repository
-10. Create PR to the forked repository as mentioned below
+7. Ensure the features is passing the acceptance criteria by `pytest test_results.py ` or `python test_results.py `
+8. Do not push changes without the tests and coverage passing
+9. Commit your changes with **proper** commit messages in imperative form like `Add my best feature`, `Fix issues casusing whatever`, `Update docs` etc: [Good reference here](https://cbea.ms/git-commit/)
+10. Make changes and push to your forked repository
+11. Create PR to the forked repository as mentioned below
 
 
 ### Pull Requests (PRs):
