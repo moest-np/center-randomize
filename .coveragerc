@@ -1,0 +1,2 @@
+[run]
+omit = app.py, test/utils/*
