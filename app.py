@@ -199,8 +199,6 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
         
         tab1.divider()
         tab1.subheader('All Data')
-        # df_school_center = df_school_center.replace(',','', regex=True)
-        # print(df_school_center)
         tab1.dataframe(df_school_center)
     else:
         tab1.info("No calculated data available.", icon="ℹ️")
