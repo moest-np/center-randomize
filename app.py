@@ -176,7 +176,12 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
          filtered_df = filter_data(df_school_center, st.session_state.filter_type, name)
 
         if st.session_state.filter_value:
-            tab1.dataframe(filtered_df, hide_index=True)
+            # Remove thousand separator comma in scode and cscode 
+            styled_df  = filtered_df.style.format({
+              "cscode": lambda x: '{:.0f}'.format(x),
+               "scode": lambda x: '{:.0f}'.format(x)
+            })
+            tab1.dataframe(styled_df , hide_index=True)
             tab1.subheader('Map')
             tab1.divider()
             for index, center in filtered_df.iterrows():
@@ -194,6 +199,8 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
         
         tab1.divider()
         tab1.subheader('All Data')
+        # df_school_center = df_school_center.replace(',','', regex=True)
+        # print(df_school_center)
         tab1.dataframe(df_school_center)
     else:
         tab1.info("No calculated data available.", icon="ℹ️")
@@ -201,6 +208,7 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
     if 'school_center_distance' in st.session_state.calculated_data:
         df = pd.read_csv(st.session_state.calculated_data['school_center_distance'], sep="\t")
         tab2.dataframe(df)
+
     else:
         tab2.error("School Center Distance file not found.")
 
