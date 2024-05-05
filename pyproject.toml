@@ -1,7 +1,7 @@
 [project]
 name = "center-randomize"
 version = "0.1.0"
-description = "Add your description here"
+description = "Exam Center Randomization Script"
 authors = [
     { name = "Manisha Bhandari", email = "manishabhandari841@gmail.com" }
 ]
