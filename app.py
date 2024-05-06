@@ -5,6 +5,7 @@ import subprocess
 import pandas as pd
 import streamlit as st
 from streamlit_folium import st_folium
+import csv
 
 
 #Page Setup
@@ -193,9 +194,42 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
                         icon=folium.Icon(color="red")
                     )
                 )
+                
+            # Initialize an empty dictionary to store school coordinates
+            filtered_schools = {}
+            # Open the schools sample data file and read data
+            with open('sample_data/schools_grade12_2081.tsv', 'r', encoding='utf-8') as file:
+             reader = csv.DictReader(file, delimiter='\t')
+             
+            # Iterate over each row in the TSV file
+             for row in reader:                   
+            # Extract school code, latitude, and longitude from the row        
+              scode = int(row['scode'])
+              school_lat = float(row['lat']) 
+              school_long = float(row['long'])  
+ 
+             # Check if the school code exists in the filtered_df
+              if scode in filtered_df['scode'].values:
+                  # Add school coordinates to filtered_schools dictionary
+                  filtered_schools.setdefault(scode, []).append((school_lat, school_long))
+             
+             # Iterate over each school in the filtered DataFrame     
+            for index, school in filtered_df.iterrows():
+             lat_long_list = filtered_schools.get(school['scode'], [])
+             
+             for school_lat, school_long in lat_long_list:
+              if school_lat is not None and school_long is not None:
+               fg.add_child(
+               folium.Marker(
+                    location=[school_lat, school_long],
+                    popup=f"{school['school'].title()}\nAllocation: {school['allocation']}",
+                    tooltip=f"{school['school']}",
+                    icon=folium.Icon(color="blue")
+              )
+            )
             m.add_child(fg)
             with tab1:
-                st_folium( m, width=1200, height=400 )
+                st_folium( m, width=1200, height=400)
         
         tab1.divider()
         tab1.subheader('All Data')
