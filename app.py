@@ -5,7 +5,6 @@ import subprocess
 import pandas as pd
 import streamlit as st
 from streamlit_folium import st_folium
-import csv
 
 
 #Page Setup
@@ -56,6 +55,7 @@ with st.sidebar:
 
     calculate = st.sidebar.button("Calculate Centers", type="primary", use_container_width=True)
 
+school_df = None
 # Tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "School Center",
@@ -74,7 +74,9 @@ tab5.subheader("Pref Data")
 # Show data in Tabs as soon as the files are uploaded
 if schools_file:
     df = pd.read_csv(schools_file, sep="\t")
+    school_df = df
     tab3.dataframe(df)
+    
 else:
     tab3.info("Upload data to view it.", icon="ℹ️")
 
@@ -198,13 +200,12 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
             # Initialize an empty dictionary to store school coordinates
             filtered_schools = {}  
               
-            if 'school_center_distance' in st.session_state.calculated_data:
-              df_school_center_distance = pd.read_csv(st.session_state.calculated_data['school_center_distance'], sep="\t")
+            if school_df is not None:
               
-              for index, row in df_school_center_distance.iterrows():                            
+              for index, row in school_df.iterrows():                       
                scode = row['scode']
-               school_lat = row['school_lat']
-               school_long = row['school_long'] 
+               school_lat = row['lat']
+               school_long = row['long']
  
                if scode in filtered_df['scode'].values:
                   filtered_schools.setdefault(scode, []).append((school_lat, school_long))
