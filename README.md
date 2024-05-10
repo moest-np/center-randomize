@@ -29,7 +29,7 @@ The goal of this script is to assign __exam centers__ to students.
 | `ABS_DISTANCE_THRESHOLD`   | 7     | Absolute threshold distance in km           |
 | `MIN_STUDENT_IN_CENTER`    | 10    | Min. no of students from a school to be assigned to a center in normal circumstances |
 | `STRETCH_CAPACITY_FACTOR`  | 0.02  | Factor determining how much center capacity can be stretched if needed |
-| `PREF_CUTOFF`              | -4    | Cutoff value for preference score allocation          |
+| `PREF_CUTOFF`              | -4    | Cut-off value for preference score allocation          |
 
 ### Input Files
 
