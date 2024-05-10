@@ -101,17 +101,17 @@ def read_tsv(file_path: str) -> List[Dict[str, str]]:
             reader = csv.DictReader(file, delimiter='\t')
             for row in reader:
                 data.append(dict(row))
-    except FileNotFoundError:
-        logger.error(f"File '{file_path}' not found.")
+    except FileNotFoundError as e:
+        logger.error(f"File '{file_path} : {e}' not found.")
         sys.exit(1)
-    except PermissionError:
-        logger.error(f"Permission denied while accessing file '{file_path}'.")
+    except PermissionError as e:
+        logger.error(f"Permission denied while accessing file '{file_path}' : {e}.")
         sys.exit(1)
-    except IOError:
-        logger.error(f"Error opening or reading file: {file_path}")
+    except IOError as e:
+        logger.error(f"Error opening or reading file: '{file_path}' : {e}")
         sys.exit(1)
     except Exception as e:
-        logger.error(f"An unexpected error occurred while reading file '{file_path}': {e}")
+        logger.error(f"An unexpected error occurred while reading file '{file_path}' : {e}")
         sys.exit(1)
     return data
 
@@ -133,14 +133,14 @@ def read_prefs(file_path: str) -> Dict[str, Dict[str, int]]:
                         prefs[row['scode']][row['cscode']] = int(row['pref'])
                 else:
                     prefs[row['scode']] = {row['cscode']: int(row['pref'])}
-    except FileNotFoundError:
-        logger.error(f"File '{file_path}' not found.")
+    except FileNotFoundError as e:
+        logger.error(f"File '{file_path} :{e}' not found.")
         sys.exit(1)
-    except PermissionError:
-        logger.error(f"Permission denied while accessing file '{file_path}'.")
+    except PermissionError as e:
+        logger.error(f"Permission denied while accessing file '{file_path}:{e}'.")
         sys.exit(1)
-    except IOError:
-        logger.error(f"Error opening or reading file: {file_path}")
+    except IOError as e:
+        logger.error(f"Error opening or reading file: {file_path} :{e}")
         sys.exit(1)
     except Exception as e:
         logger.error(f"An unexpected error occurred while reading file '{file_path}': {e}")
