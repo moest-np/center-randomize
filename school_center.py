@@ -305,7 +305,6 @@ def get_max_retries():
             return max_retries
         except ValueError:
             return MAX_RETRIES
-        return args.max_retries
     return MAX_RETRIES
 
 
