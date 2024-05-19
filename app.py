@@ -5,9 +5,10 @@ import subprocess
 import pandas as pd
 import streamlit as st
 from streamlit_folium import st_folium
+from jinja2 import Template
+from pipes import Template
 
-
-#Page Setup
+# #Page Setup
 st.set_page_config(
    page_title="MOEST Exam Center Calculator",
    page_icon=":school:",
@@ -24,7 +25,25 @@ custom_css = """
 }
 </style>
 """
-
+legend_template = """
+{% macro html(this, kwargs) %}
+<div id='maplegend' class='maplegend' 
+    style='position: absolute; z-index: 9999; background-color: rgba(255, 255, 255, 0.65);
+     border-radius: 6px; padding: 10px; font-size: 10.5px; right: 15px; top: 15px; border: 2px solid black;'>     
+<div class='legend-scale'>
+  <ul class='legend-labels'>
+    <li style='font-size:18px;margin-bottom:5px;'><span style='background: #0096FF; opacity: 0.75;'></span>School</li>
+    <li style='font-size:18px;'><span style='background: #C41E3A; opacity: 1.75;'></span>Center</li>
+  </ul>
+</div>
+</div> 
+<style type='text/css'>
+  .maplegend .legend-scale ul {margin: 0; padding: 0; color: #0f0f0f;}
+  .maplegend .legend-scale ul li {list-style: none; line-height: 18px; margin-bottom: 1.5px;}
+  .maplegend ul.legend-labels li span {float: left; height: 16px; width: 16px; margin-right: 4.5px;}
+</style>
+{% endmacro %}
+"""
 # Render custom CSS
 st.markdown(custom_css, unsafe_allow_html=True)
 
@@ -42,6 +61,12 @@ if 'filter_value' not in st.session_state:
 
 #Maps setup
 m = folium.Map(location=[27.7007, 85.3001], zoom_start=12, )
+
+# Add Legend in map
+macro = folium.MacroElement()
+macro._template = Template(legend_template)
+m.get_root().add_child(macro)
+
 fg = folium.FeatureGroup(name="Allocated Centers")
 
 #Sidebar
