@@ -6,7 +6,6 @@ import pandas as pd
 import streamlit as st
 from streamlit_folium import st_folium
 from jinja2 import Template
-from pipes import Template
 
 # #Page Setup
 st.set_page_config(
