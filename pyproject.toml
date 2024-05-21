@@ -3,7 +3,7 @@ name = "center-randomize"
 version = "0.1.0"
 description = "Exam Center Randomization Script"
 authors = [
-    { name = "Manisha Bhandari", email = "manishabhandari841@gmail.com" }
+    { name = "moest-np" }
 ]
 dependencies = [
     "streamlit-folium==0.19.1",
@@ -11,7 +11,7 @@ dependencies = [
     "streamlit>=1.33.0",
 ]
 readme = "README.md"
-requires-python = ">= 3.8"
+requires-python = ">= 3.9"
 
 [build-system]
 requires = ["hatchling"]

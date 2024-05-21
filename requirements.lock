@@ -6,6 +6,7 @@
 #   features: []
 #   all-features: false
 #   with-sources: false
+#   generate-hashes: false
 
 -e file:.
 altair==5.3.0
@@ -26,8 +27,6 @@ charset-normalizer==3.3.2
     # via requests
 click==8.1.7
     # via streamlit
-colorama==0.4.6
-    # via click
 folium==0.16.0
     # via center-randomize
     # via streamlit-folium
@@ -53,7 +52,7 @@ markupsafe==2.1.5
     # via jinja2
 mdurl==0.1.2
     # via markdown-it-py
-numpy==1.26.4
+numpy==1.24.4
     # via altair
     # via folium
     # via pandas
@@ -63,7 +62,7 @@ numpy==1.26.4
 packaging==24.0
     # via altair
     # via streamlit
-pandas==2.2.2
+pandas==2.0.3
     # via altair
     # via streamlit
 pillow==10.3.0
@@ -109,6 +108,7 @@ toolz==0.12.1
 tornado==6.4
     # via streamlit
 typing-extensions==4.11.0
+    # via altair
     # via streamlit
 tzdata==2024.1
     # via pandas
