@@ -31,8 +31,8 @@ jobs:
                 run: |
                     rye run pre-commit run --all-files
             -   name: Test
-                run: |
-                    rye run pytest --cov=src --cov-report=html
+                run: |                   
+                    rye run pytest
             -   name: Upload coverage to Codecov
                 uses: codecov/codecov-action@v1
                 with:
