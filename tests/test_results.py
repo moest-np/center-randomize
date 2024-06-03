@@ -7,7 +7,7 @@ import warnings
 # Add the parent directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from test.utils.custom_tsv_parser import ParseTSVFile
+from tests.utils.custom_tsv_parser import ParseTSVFile
 
 PREF_CUTOFF = -4
 
