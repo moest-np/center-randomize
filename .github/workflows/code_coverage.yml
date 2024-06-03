@@ -9,26 +9,25 @@ jobs:
             matrix:
                 python-version: [ "3.11.3" ]
         steps:
-            -   uses: actions/checkout@v4
-            -   uses: eifinger/setup-rye@v3
-                id: setup-rye
-                with:
-                    enable-cache: true
-                    cache-prefix: ${{ matrix.python-version }}
-            -   name: Pin python-version ${{ matrix.python-version }}
-                if: steps.setup-rye.outputs.cache-hit != 'true'
-                run: rye pin ${{ matrix.python-version }}
-            -   name: Install dependencies
-                if: steps.setup-rye.outputs.cache-hit != 'true'
-                run: |
-                    rye sync --no-lock
-            -   name: Lint
-                run: |
-                    rye lint -a
-            -   name: Test
-                run: |                   
-                    rye run pytest
-            -   name: Upload coverage to Codecov
-                uses: codecov/codecov-action@v1
-                with:
-                    file: ./htmlcov/index.html
+            - uses: actions/checkout@v4
+            - uses: eifinger/setup-rye@v3
+              id: setup-rye
+              with:
+                  cache-prefix: ${{ matrix.python-version }}
+
+            - name: Pin python-version ${{ matrix.python-version }}
+              run: rye pin ${{ matrix.python-version }}
+
+            - name: Install dependencies
+              run: rye sync --no-lock
+
+            - name: Lint
+              run: rye lint -a
+
+            - name: Test
+              run: rye run pytest
+
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v1
+              with:
+                  file: ./htmlcov/index.html
