@@ -24,7 +24,7 @@ jobs:
                     rye sync --no-lock
             -   name: Lint
                 run: |
-                    rye run pre-commit run --all-files
+                    rye lint -a
             -   name: Test
                 run: |                   
                     rye run pytest
