@@ -22,11 +22,6 @@ jobs:
                 if: steps.setup-rye.outputs.cache-hit != 'true'
                 run: |
                     rye sync --no-lock
-            -   name: Cache pre-commit
-                uses: actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319  # v4.0.1
-                with:
-                    path: ~/.cache/pre-commit
-                    key: pre-commit-|${{ matrix.python-version }}|${{ hashFiles('.pre-commit-config.yaml') }}
             -   name: Lint
                 run: |
                     rye run pre-commit run --all-files
