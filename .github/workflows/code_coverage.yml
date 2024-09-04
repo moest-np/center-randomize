@@ -1,26 +1,33 @@
 name: "Code Coverage"
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
-  coverage:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-    - name: Run pytest with coverage
-      run: |
-        pytest --cov=./ --cov-report=xml
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+    build:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                python-version: [ "3.11.3" ]
+        steps:
+            - uses: actions/checkout@v4
+            - uses: eifinger/setup-rye@v3
+              id: setup-rye
+              with:
+                  cache-prefix: ${{ matrix.python-version }}
+
+            - name: Pin python-version ${{ matrix.python-version }}
+              run: rye pin ${{ matrix.python-version }}
+
+            - name: Install dependencies
+              run: rye sync --no-lock
+
+            - name: Lint
+              run: rye lint -a
+
+            - name: Test
+              run: rye run pytest
+
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v1
+              with:
+                  file: ./htmlcov/index.html

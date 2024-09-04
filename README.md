@@ -67,12 +67,14 @@ scode	cscode	pref	reason
 ```
 
 ## Command
+You need to have [Rye](https://rye-up.com/guide/installation/) installed in your system to be able to run the project.Once you have it installed, run ```rye sync```
 
 To run `school_center.py` use the command below:
 
 ```bash
-python3 school_center.py sample_data/schools_grade12_2081.tsv sample_data/centers_grade12_2081.tsv sample_data/prefs.tsv
+rye run dev
 ```
+If you change the location of your sample files, make sure to update the command(cmd) in ```[tool.rye.scripts]``` in the ```pyproject.toml``` file with your file path and execute ```rye sync``` . If you wish to run any other files than ```school_center.py```, you can simply do ```rye run python file_name.py```
 
 ## Output
 
