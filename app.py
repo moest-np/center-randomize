@@ -5,9 +5,10 @@ import subprocess
 import pandas as pd
 import streamlit as st
 from streamlit_folium import st_folium
-from jinja2 import Template
+from utils.pretty import pretty_dataframe, pretty_map_zoom, custom_map_tooltip
 
-# #Page Setup
+
+#Page Setup
 st.set_page_config(
    page_title="MOEST Exam Center Calculator",
    page_icon=":school:",
@@ -24,25 +25,7 @@ custom_css = """
 }
 </style>
 """
-legend_template = """
-{% macro html(this, kwargs) %}
-<div id='maplegend' class='maplegend' 
-    style='position: absolute; z-index: 9999; background-color: rgba(255, 255, 255, 0.65);
-     border-radius: 6px; padding: 10px; font-size: 10.5px; right: 15px; top: 15px; border: 2px solid black;'>     
-<div class='legend-scale'>
-  <ul class='legend-labels'>
-    <li style='font-size:18px;margin-bottom:5px;'><span style='background: #0096FF; opacity: 0.75;'></span>School</li>
-    <li style='font-size:18px;'><span style='background: #C41E3A; opacity: 1.75;'></span>Center</li>
-  </ul>
-</div>
-</div> 
-<style type='text/css'>
-  .maplegend .legend-scale ul {margin: 0; padding: 0; color: #0f0f0f;}
-  .maplegend .legend-scale ul li {list-style: none; line-height: 18px; margin-bottom: 1.5px;}
-  .maplegend ul.legend-labels li span {float: left; height: 16px; width: 16px; margin-right: 4.5px;}
-</style>
-{% endmacro %}
-"""
+
 # Render custom CSS
 st.markdown(custom_css, unsafe_allow_html=True)
 
@@ -58,21 +41,10 @@ if 'filter_type' not in st.session_state:
 if 'filter_value' not in st.session_state:
     st.session_state.filter_value = None
 
-#Maps setup
-m = folium.Map(location=[27.7007, 85.3001], zoom_start=12, )
-
-# Add Legend in map
-macro = folium.MacroElement()
-macro._template = Template(legend_template)
-m.get_root().add_child(macro)
-
-fg = folium.FeatureGroup(name="Allocated Centers")
-
 #Sidebar
 with st.sidebar:
-
     add_side_header = st.sidebar.title("Random Center Calculator")
-
+    
     schools_file = st.sidebar.file_uploader("Upload School/College file", type="tsv")
     centers_file = st.sidebar.file_uploader("Upload Centers file", type="tsv")
     prefs_file = st.sidebar.file_uploader("Upload Preferences file", type="tsv")
@@ -80,39 +52,40 @@ with st.sidebar:
     calculate = st.sidebar.button("Calculate Centers", type="primary", use_container_width=True)
 
 school_df = None
+divider_color = "red"
 # Tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "School Center",
-    "School Center Distance",
-    "View School Data",
-    "View Centers Data",
-    "View Pref Data" 
+    "📍 School Center",
+    "🚌 School Center Distance",
+    "🏫 View School Data",
+    "📍 View Centers Data",
+    "🧮 View Pref Data" 
     ])
 
-tab1.subheader("School Center")
-tab2.subheader("School Center Distance")
-tab3.subheader("School Data")
-tab4.subheader("Center Data")
-tab5.subheader("Pref Data")
+tab1.subheader("School Center", divider=divider_color)
+tab2.subheader("School Center Distance", divider=divider_color)
+tab3.subheader("School Data", divider=divider_color)
+tab4.subheader("Center Data", divider=divider_color)
+tab5.subheader("Pref Data", divider=divider_color)
 
 # Show data in Tabs as soon as the files are uploaded
 if schools_file:
     df = pd.read_csv(schools_file, sep="\t")
     school_df = df
-    tab3.dataframe(df)
+    tab3.dataframe(pretty_dataframe(df), use_container_width=True)
     
 else:
     tab3.info("Upload data to view it.", icon="ℹ️")
 
 if centers_file:
     df = pd.read_csv(centers_file, sep="\t")
-    tab4.dataframe(df)
+    tab4.dataframe(pretty_dataframe(df), use_container_width=True)
 else:
     tab4.info("Upload data to view it.", icon="ℹ️")
 
 if prefs_file:
     df = pd.read_csv(prefs_file, sep="\t")
-    tab5.dataframe(df)
+    tab5.dataframe(pretty_dataframe(df), use_container_width=True)
 else:
     tab5.info("Upload data to view it.", icon="ℹ️")
 
@@ -181,7 +154,7 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
     if 'school_center' in st.session_state.calculated_data:
         df_school_center = pd.read_csv(st.session_state.calculated_data['school_center'], sep="\t")
         allowed_filter_types = ['school', 'center']
-        st.session_state.filter_type = tab1.radio("Choose a filter type:", allowed_filter_types)
+        st.session_state.filter_type = tab1.radio("Choose a filter type:", allowed_filter_types, horizontal=True)
 
         # Display an input field based on the selected filter type
         if st.session_state.filter_type:
@@ -194,7 +167,7 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
           filter_options = [f"{code} | {name}" for name, code in zip(df_school_center['center'].unique(), df_school_center['cscode'].unique())]
 
          # Display a selectbox for selection
-         st.session_state.filter_value = tab1.selectbox(f"Select a value for {st.session_state.filter_type}:", filter_options)
+         st.session_state.filter_value = tab1.selectbox(f"Select a value for {st.session_state.filter_type.capitalize()}:", filter_options)
 
          # Split the selected value to extract name and code
          code, name = st.session_state.filter_value.split(' | ')
@@ -202,65 +175,76 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
          # Filter the DataFrame based on the selected type and value
          filtered_df = filter_data(df_school_center, st.session_state.filter_type, name)
 
-        if st.session_state.filter_value:
+        with tab1:
+          if st.session_state.filter_value:
             # Remove thousand separator comma in scode and cscode 
-            styled_df  = filtered_df.style.format({
+            styled_df  = pretty_dataframe(filtered_df).style.format({
               "cscode": lambda x: '{:.0f}'.format(x),
-               "scode": lambda x: '{:.0f}'.format(x)
+              "scode": lambda x: '{:.0f}'.format(x)
             })
-            tab1.dataframe(styled_df , hide_index=True)
-            tab1.subheader('Map')
-            tab1.divider()
-            for index, center in filtered_df.iterrows():
-                fg.add_child(
-                    folium.Marker(
-                        location=[center.center_lat, center.center_long],
-                        popup=f"{(center.center).title()}\nAllocation: {center.allocation}",
-                        tooltip=f"{center.center}",
-                        icon=folium.Icon(color="red")
-                    )
-                )
-                
-            # Initialize an empty dictionary to store school coordinates
-            filtered_schools = {}  
-              
+            st.dataframe(styled_df , hide_index=True, use_container_width=True)
+            st.markdown("<br/><br/>", unsafe_allow_html=True)
+            st.subheader('Map', divider=divider_color)
+            
+            # Initialize data for map
+            map_data = filtered_df[['center_lat', 'center_long', 'center', 'allocation']].copy()
+            map_data.columns = ['lat', 'long', 'name', 'allocation']
+            map_data['type'] = 'Center'
+            
             if school_df is not None:
-              
-              for index, row in school_df.iterrows():                       
-               scode = row['scode']
-               school_lat = row['lat']
-               school_long = row['long']
- 
-               if scode in filtered_df['scode'].values:
-                  filtered_schools.setdefault(scode, []).append((school_lat, school_long))
-                 
-              for index, school in filtered_df.iterrows():
-               lat_long_list = filtered_schools.get(school['scode'], [])
-             
-               for school_lat, school_long in lat_long_list:
-                if school_lat is not None and school_long is not None:
-                 fg.add_child(
-                 folium.Marker(
-                    location=[school_lat, school_long],
-                    popup=f"{school['school'].title()}\nAllocation: {school['allocation']}",
-                    tooltip=f"{school['school']}",
-                    icon=folium.Icon(color="blue")
-                 )
-                )
-                 
+                filter_school = school_df[school_df['scode'].isin(filtered_df['scode']) & school_df['lat'].notnull() & school_df['long'].notnull()]
+                school_map_data = filter_school[['lat', 'long', 'name-address']].copy().rename(columns={'name-address': 'name'})
+                school_map_data['type'] = 'School'
+                map_data = pd.concat([map_data, school_map_data], ignore_index=True)
+            
+            map_data.drop_duplicates(inplace=True)
+            
+            try:
+                if st.session_state.map_type:
+                    st.session_state.map_type = st.radio("Choose a map type:", ["cartodbpositron", "openstreetmap"], horizontal=True)
+            except:
+                st.session_state.map_type = "cartodbpositron"
+            
+            show_heatmap = st.checkbox("View allocation distribution", value=False)
+            
+            # Maps setup
+            m = folium.Map(
+                location=[map_data['lat'].mean(), map_data['long'].mean()],         # Center map on the mean of the lat and long
+                zoom_start=pretty_map_zoom(map_data['lat'].values, map_data['long'].values),
+                tiles=st.session_state.map_type
+            )
+            
+            fg = folium.FeatureGroup(name="Allocated Centers")
+            for _, row in map_data.iterrows(): 
+                fg.add_child(folium.Marker(
+                    location=[row['lat'], row['long']],
+                    tooltip=custom_map_tooltip(row),
+                    popup=custom_map_tooltip(row),
+                    icon= folium.CustomIcon(
+                        "https://cdn-icons-png.flaticon.com/256/4996/4996117.png" if row['type'] == "School" else "https://cdn-icons-png.flaticon.com/256/15092/15092199.png",
+                        icon_size=(38, 40),
+                        icon_anchor=(21, 38),
+                        shadow_image="https://static.vecteezy.com/system/resources/thumbnails/013/169/090/small_2x/oval-shadow-for-object-or-product-png.png",
+                        shadow_size=(28, 30) if row['type'] == "School" else (22, 24),
+                        shadow_anchor=(8, 19) if row['type'] == "School" else (8, 13),
+                    )
+                ))
             m.add_child(fg)
-            with tab1:
-                st_folium( m, width=1200, height=400)
-        
-        tab1.divider()
-        tab1.subheader('All Data')
-        tab1.dataframe(df_school_center)
+            
+            if show_heatmap:
+                folium.plugins.HeatMap(data=map_data[map_data.allocation > 0][['lat', 'long']].fillna(0), radius=15).add_to(m)
+            
+            st_folium( m, width=1200, height=400)
+         
+          st.markdown("<br/><br/>", unsafe_allow_html=True)
+          st.subheader('All Data', divider=divider_color)
+          st.dataframe(pretty_dataframe(df_school_center), use_container_width=True)
     else:
         tab1.info("No calculated data available.", icon="ℹ️")
     
     if 'school_center_distance' in st.session_state.calculated_data:
         df = pd.read_csv(st.session_state.calculated_data['school_center_distance'], sep="\t")
-        tab2.dataframe(df)
+        tab2.dataframe(pretty_dataframe(df), use_container_width=True)
 
     else:
         tab2.error("School Center Distance file not found.")
