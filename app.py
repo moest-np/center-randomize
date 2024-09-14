@@ -232,7 +232,17 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
             m.add_child(fg)
             
             if show_heatmap:
-                folium.plugins.HeatMap(data=map_data[map_data.allocation > 0][['lat', 'long']].fillna(0), radius=15).add_to(m)
+                max_allocation = map_data['allocation'].max()
+                for _, row in map_data[map_data.allocation > 0].iterrows():
+                    folium.CircleMarker(
+                        location=[row['lat'], row['long']],
+                        radius=row['allocation'] / max_allocation * 25,
+                        color="#3c844a",
+                        opacity=0.35,
+                        fill=True,
+                        fill_color="green",
+                        fill_opacity=0.3
+                    ).add_to(m)
             
             st_folium( m, width=1200, height=400)
          
