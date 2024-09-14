@@ -5,7 +5,7 @@ import subprocess
 import pandas as pd
 import streamlit as st
 from streamlit_folium import st_folium
-from utils.pretty import pretty_dataframe, pretty_map_zoom, custom_map_tooltip
+from utils.pretty import pretty_dataframe, custom_map_zoom, custom_map_tooltip
 
 
 #Page Setup
@@ -210,7 +210,7 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
             # Maps setup
             m = folium.Map(
                 location=[map_data['lat'].mean(), map_data['long'].mean()],         # Center map on the mean of the lat and long
-                zoom_start=pretty_map_zoom(map_data['lat'].values, map_data['long'].values),
+                zoom_start=custom_map_zoom(map_data['lat'].values, map_data['long'].values),
                 tiles=st.session_state.map_type
             )
             

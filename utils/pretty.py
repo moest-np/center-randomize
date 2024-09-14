@@ -1,13 +1,10 @@
-import numpy as np
-import streamlit as st
-
 def pretty_dataframe(df):
     df = df.copy()
     df.columns = df.columns.str.replace("_", " ").str.title()
     
     return df
 
-def pretty_map_zoom(lat, long):
+def custom_map_zoom(lat, long):
     min_lat, max_lat = lat.min(), lat.max()
     min_long, max_long = long.min(), long.max()
     
