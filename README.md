@@ -3,7 +3,7 @@ The goal of this script is to assign __exam centers__ to students.
 
 ## Steps
 1. Prepare input files in the specified format.
-2. Run the program and re-run if - 
+2. Run the program and re-run if:
    * Any school has students who have not been assigned a center.
    * Distribution across centers is uneven.
 3. Perform sanity checks of distributed centers.
@@ -23,13 +23,13 @@ The goal of this script is to assign __exam centers__ to students.
 
 ## Parameters 
 
-| Variable                 | Value | Description                                 |
-|--------------------------|-------|---------------------------------------------|
-| `PREF_DISTANCE_THRESHOLD`  | 2     | Preferred threshold distance in km          |
-| `ABS_DISTANCE_THRESHOLD`   | 7     | Absolute threshold distance in km           |
+| Variable                   | Value | Description                                                                          |
+|----------------------------|-------|--------------------------------------------------------------------------------------|
+| `PREF_DISTANCE_THRESHOLD`  | 2     | Preferred threshold distance in km                                                   | 
+| `ABS_DISTANCE_THRESHOLD`   | 7     | Absolute threshold distance in km                                                    |
 | `MIN_STUDENT_IN_CENTER`    | 10    | Min. no of students from a school to be assigned to a center in normal circumstances |
-| `STRETCH_CAPACITY_FACTOR`  | 0.02  | Factor determining how much center capacity can be stretched if needed |
-| `PREF_CUTOFF`              | -4    | Cutoff value for preference score allocation          |
+| `STRETCH_CAPACITY_FACTOR`  | 0.02  | Factor determining how much center capacity can be stretched if needed               |
+| `PREF_CUTOFF`              | -4    | Cutoff value for preference score allocation                                         |
 
 ### Input Files
 
