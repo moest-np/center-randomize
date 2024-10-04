@@ -68,6 +68,12 @@ scode	cscode	pref	reason
 
 ## Command
 
+Requirements Installation:
+
+```bash
+pip install -r requirements.txt
+```
+
 To run `school_center.py` use the command below:
 
 ```bash
