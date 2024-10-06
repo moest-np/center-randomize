@@ -48,11 +48,11 @@ class TestSchoolCenter(unittest.TestCase):
 
     def test_results_exists(self):
         """_Test if the application in running which output the results in the
-             results filder_
+             results folder_
 
         Returns:
             Pass: If the file exists in the results folder
-            Fail: If the file doesnot exists in the results folder
+            Fail: If the file does not exists in the results folder
         """
         self.assertTrue(os.path.exists(self.school_center_file))
         self.assertTrue(os.path.exists(self.school_center_distance_file))
