@@ -198,6 +198,22 @@ def is_allocated(scode1: str, scode2: str) -> bool:
     """
     return allocations.get(scode1, {}).get(scode2) is not None
 
+def validate_data(schools, centers, prefs):
+    # Ensure all necessary fields are present and valid
+    for school in schools:
+        if not all(k in school for k in ('scode', 'name-address', 'lat', 'long', 'count')):
+            logger.error(f"Invalid school data: {school}")
+            sys.exit(1)
+    for center in centers:
+        if not all(k in center for k in ('cscode', 'name', 'address', 'lat', 'long', 'capacity')):
+            logger.error(f"Invalid center data: {center}")
+            sys.exit(1)
+    # Validate preference scores similarly
+    for scode, center_prefs in prefs.items():
+        for cscode, pref in center_prefs.items():
+            if not isinstance(pref, int):
+                logger.error(f"Invalid preference data: scode={scode}, cscode={cscode}, pref={pref}")
+                sys.exit(1)
 
 parser = argparse.ArgumentParser(
     prog='center randomizer',
@@ -223,9 +239,10 @@ centers = read_tsv(args.centers_tsv)
 centers_remaining_cap = {c['cscode']: int(c['capacity']) for c in centers}
 prefs = read_prefs(args.prefs_tsv)
 
+validate_data(schools, centers, prefs) #Validate Data Here
+
 remaining = 0       # stores count of non allocated students
 allocations = {}    # to track mutual allocations
-
 
 def get_output_dir():
     dirname = path.dirname(args.output)
