@@ -202,7 +202,7 @@ if st.session_state.calculate_clicked and st.session_state.calculation_completed
             try:
                 if st.session_state.map_type:
                     st.session_state.map_type = st.radio("Choose a map type:", ["cartodbpositron", "openstreetmap"], horizontal=True)
-            except:
+            except Exception:
                 st.session_state.map_type = "cartodbpositron"
             
             show_heatmap = st.checkbox("View allocation distribution", value=False)
