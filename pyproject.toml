@@ -1,0 +1,38 @@
+[project]
+name = "center-randomize"
+version = "0.1.0"
+description = "Exam Center Randomization Script"
+authors = [
+    { name = "moest-np" }
+]
+dependencies = [
+    "streamlit-folium==0.19.1",
+    "folium==0.16.0",
+    "streamlit>=1.33.0",
+]
+readme = "README.md"
+requires-python = ">= 3.9"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "pytest==8.0.2",
+    "pytest-clarity==1.0.1",
+    "pytest-sugar==1.0.0",
+    "pytest-cov==5.0.0",
+    "ruff==0.4.1",
+    "pre-commit==3.6.0",
+]
+
+[tool.rye.scripts]
+dev = { cmd = "python -m school_center sample_data/schools_grade12_2081.tsv sample_data/centers_grade12_2081.tsv sample_data/prefs.tsv", env = {} }
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/center_randomize"]
