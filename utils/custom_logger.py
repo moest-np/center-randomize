@@ -8,7 +8,7 @@ from os.path import abspath, dirname, join, exists
 
 ROOT_DIR: str = abspath(dirname(dirname(__file__)))
 LOGS_DIR: str = join(ROOT_DIR, "logs")
-LOGS_TARGET: str = join(ROOT_DIR, "logs", "custom_logs.log")
+LOGS_TARGET: str = os.path.join(LOGS_DIR, "custom_logs.log")
 CUSTOM_FILE_HANDLER_PATH = "utils.custom_file_handler.CustomFileHandler"
 
 if not exists(LOGS_DIR):
