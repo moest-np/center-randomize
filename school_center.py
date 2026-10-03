@@ -1,4 +1,6 @@
 from utils.custom_logger import configure_logging
+from utils.allocation import merge_small_allocations
+from collections import namedtuple
 from typing import Dict, List
 from os import sys, path, makedirs
 import argparse
@@ -13,6 +15,7 @@ ABS_DISTANCE_THRESHOLD = 7      # Absolute threshold distance in km
 MIN_STUDENT_IN_CENTER = 10      # Min. no of students from a school to be assigned to a center in normal circumstances
 STRETCH_CAPACITY_FACTOR = 0.02  # How much can center capacity be streched if need arises
 PREF_CUTOFF = -4                # Do not allocate students with pref score less than cutoff
+MAX_ATTEMPTS = 10               # Max. no of times to run the allocation if students are left without a center
 DEFAULT_OUTPUT_DIR = 'results'  # Default directory to create output files if --output not provided
 DEFAULT_OUTPUT_FILENAME = 'school-center.tsv'
 
@@ -72,7 +75,7 @@ def centers_within_distance(school: Dict[str, str], centers: Dict[str, str], dis
     # nearest_center = None
     for c in centers:
         if school['scode'] == c['cscode'] \
-            or is_allocated(c['cscode'], s['scode']) \
+            or is_allocated(c['cscode'], school['scode']) \
             or get_pref(school['scode'], c['cscode']) <= PREF_CUTOFF:
             continue
         distance = haversine_distance(float(school_lat), float(
@@ -213,16 +216,22 @@ parser.add_argument('-o', '--output', default = DEFAULT_OUTPUT_FILENAME,
 parser.add_argument('-s', '--seed', action='store', metavar='SEEDVALUE',
                      default=None, type=float, 
                      help='Initialization seed for Random Number Generator')
+parser.add_argument('-a', '--max-attempts', type=int, default=MAX_ATTEMPTS,
+                    help='Number of times to run the allocation if students are left without a center, '
+                         'the best run is kept')
 
 args = parser.parse_args()
+if args.max_attempts < 1:
+    parser.error('--max-attempts must be at least 1')
 
 random = random.Random(args.seed) #overwrites the random module to use seeded rng
 
-schools = sorted(read_tsv(args.schools_tsv), key= school_sort_key)
+all_schools = read_tsv(args.schools_tsv)
 centers = read_tsv(args.centers_tsv)
-centers_remaining_cap = {c['cscode']: int(c['capacity']) for c in centers}
+center_capacity = {c['cscode']: int(c['capacity']) for c in centers}
 prefs = read_prefs(args.prefs_tsv)
 
+centers_remaining_cap = {}  # remaining capacity of each center, reset for every attempt
 remaining = 0       # stores count of non allocated students
 allocations = {}    # to track mutual allocations
 
@@ -246,10 +255,35 @@ output_dirname = get_output_dir()
 output_filename = get_output_filename()
 makedirs(output_dirname, exist_ok=True) # Create the output directory if not exists
 
-with open(path.join(output_dirname, "school-center-distance.tsv"), 'w', encoding='utf-8') as intermediate_file, \
-open(path.join(output_dirname, output_filename), 'w', encoding='utf-8') as a_file:
-    writer = csv.writer(intermediate_file, delimiter="\t")
-    writer.writerow(["scode", 
+class RowBuffer:
+    """
+    Collects the rows of one attempt, only the rows of the best attempt are written to file.
+    """
+    def __init__(self):
+        self.rows = []
+
+    def writerow(self, row):
+        self.rows.append(row)
+
+
+Attempt = namedtuple('Attempt', ['distance_rows', 'allocation_rows', 'remaining', 'remaining_cap',
+                                 'left_messages'])
+
+
+def run_allocation() -> Attempt:
+    """
+    Allocate the students of all schools to centers, schools in a random order.
+    Return the rows for the output files and the number of students left without a center.
+    """
+    global centers_remaining_cap, remaining, allocations
+    centers_remaining_cap = dict(center_capacity)
+    remaining = 0
+    allocations = {}
+    left_messages = []   # warnings about schools with students left, logged for the kept attempt
+    schools = sorted(all_schools, key=school_sort_key)
+
+    writer = RowBuffer()
+    writer.writerow(["scode",
                      "s_count", 
                      "school_name", 
                      "school_lat", 
@@ -260,8 +294,8 @@ open(path.join(output_dirname, output_filename), 'w', encoding='utf-8') as a_fil
                      "center_capacity", 
                      "distance_km"])
 
-    allocation_file = csv.writer(a_file, delimiter='\t')
-    allocation_file.writerow(["scode", 
+    allocation_file = RowBuffer()
+    allocation_file.writerow(["scode",
                               "school", 
                               "cscode", 
                               "center", 
@@ -315,8 +349,24 @@ open(path.join(output_dirname, output_filename), 'w', encoding='utf-8') as a_fil
                     to_allot -= next_allot
                     centers_remaining_cap[c['cscode']] -= next_allot
 
+        # Avoid a small number of students at a center, e.g. 100 + 100 + 7 becomes 107 + 100
+        if allocated_centers:
+            school_allocation = allocations[s['scode']]
+            # Only the centers of this row, a duplicate scode in schools.tsv would add more
+            this_allocation = {cscode: school_allocation[cscode] for cscode in allocated_centers}
+            spare = {cscode: math.floor(
+                        center_capacity[cscode] * STRETCH_CAPACITY_FACTOR + centers_remaining_cap[cscode])
+                     for cscode in this_allocation}
+            moves = merge_small_allocations(this_allocation, spare, MIN_STUDENT_IN_CENTER)
+            for small, target in moves.items():
+                moved = school_allocation.pop(small)
+                school_allocation[target] += moved
+                centers_remaining_cap[small] += moved
+                centers_remaining_cap[target] -= moved
+                del allocated_centers[small]
+
         for c in allocated_centers.values():
-            allocation_file.writerow([s['scode'], 
+            allocation_file.writerow([s['scode'],
                                       s['name-address'], 
                                       c['cscode'], 
                                       c['name'],
@@ -328,12 +378,67 @@ open(path.join(output_dirname, output_filename), 'w', encoding='utf-8') as a_fil
 
         if to_allot > 0:
             remaining += to_allot
-            logger.warning(
+            left_messages.append(
                 f"{to_allot}/{s['count']} left for {s['scode']} {s['name-address']} centers: {len(centers_for_school)}")
 
-    logger.info("Remaining capacity at each center (remaining_capacity cscode):")
-    logger.info(sorted([(v, k)
-                for k, v in centers_remaining_cap.items() if v != 0]))
-    logger.info(
-        f"Total remaining capacity across all centers: {sum({k:v for k, v in centers_remaining_cap.items() if v != 0}.values())}")
-    logger.info(f"Students not assigned: {remaining}")
+    return Attempt(writer.rows, allocation_file.rows, remaining, centers_remaining_cap, left_messages)
+
+
+def unplaceable_students() -> int:
+    """
+    Students of schools that no attempt can give a center: no coordinates, or every
+    center is the school itself or excluded by the preferences.
+    """
+    total = 0
+    for s in all_schools:
+        has_center = any(c['cscode'] != s['scode'] and get_pref(s['scode'], c['cscode']) > PREF_CUTOFF
+                         for c in centers)
+        if not (s.get('lat') and s.get('long')) or not has_center:
+            total += int(s['count'])
+    return total
+
+
+# Empty the output files, as when they were opened before the allocation, so that
+# results of an earlier run are never mistaken for this one if the program fails
+for filename in ("school-center-distance.tsv", output_filename):
+    open(path.join(output_dirname, filename), 'w', encoding='utf-8').close()
+
+# Run again, with schools in a new random order, while students are left without a center
+best = None
+best_attempt = 0
+fewest_possible = None   # students that no attempt can place, only worked out if needed
+for attempt in range(1, args.max_attempts + 1):
+    result = run_allocation()
+    if best is None or result.remaining < best.remaining:
+        best, best_attempt = result, attempt
+    if result.remaining == 0:
+        break
+    if fewest_possible is None:
+        fewest_possible = unplaceable_students()
+    if best.remaining <= fewest_possible:
+        break   # another attempt can not do better
+    logger.warning(
+        f"Attempt {attempt}/{args.max_attempts}: {result.remaining} students not assigned"
+        + (", trying again" if attempt < args.max_attempts else ""))
+
+if best.remaining > 0:
+    for message in best.left_messages:
+        logger.warning(message)
+    logger.error(
+        f"{best.remaining} students are still not assigned to a center after {attempt} "
+        f"attempt{'s' if attempt > 1 else ''}. Check the schools above, more centers or "
+        "more capacity may be needed")
+if attempt > 1:
+    logger.info(f"Result of attempt {best_attempt} of {attempt} kept")
+
+with open(path.join(output_dirname, "school-center-distance.tsv"), 'w', encoding='utf-8') as intermediate_file, \
+open(path.join(output_dirname, output_filename), 'w', encoding='utf-8') as a_file:
+    csv.writer(intermediate_file, delimiter="\t").writerows(best.distance_rows)
+    csv.writer(a_file, delimiter='\t').writerows(best.allocation_rows)
+
+logger.info("Remaining capacity at each center (remaining_capacity cscode):")
+logger.info(sorted([(v, k)
+            for k, v in best.remaining_cap.items() if v != 0]))
+logger.info(
+    f"Total remaining capacity across all centers: {sum({k:v for k, v in best.remaining_cap.items() if v != 0}.values())}")
+logger.info(f"Students not assigned: {best.remaining}")

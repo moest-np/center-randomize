@@ -3,8 +3,8 @@ The goal of this script is to assign __exam centers__ to students.
 
 ## Steps
 1. Prepare input files in the specified format.
-2. Run the program and re-run if - 
-   * Any school has students who have not been assigned a center.
+2. Run the program. If any school has students who have not been assigned a center it runs again by itself, up to `MAX_ATTEMPTS` times, and keeps the best run. Re-run if - 
+   * Students are still not assigned after all attempts. An error is logged and "Students not assigned" shows how many. More centers or more capacity may be needed.
    * Distribution across centers is uneven.
 3. Perform sanity checks of distributed centers.
 4. Manually reassign impractical centers and odd lot allocations. Keep changes to a minimum. 
@@ -27,9 +27,10 @@ The goal of this script is to assign __exam centers__ to students.
 |--------------------------|-------|---------------------------------------------|
 | `PREF_DISTANCE_THRESHOLD`  | 2     | Preferred threshold distance in km          |
 | `ABS_DISTANCE_THRESHOLD`   | 7     | Absolute threshold distance in km           |
-| `MIN_STUDENT_IN_CENTER`    | 10    | Min. no of students from a school to be assigned to a center in normal circumstances |
-| `STRETCH_CAPACITY_FACTOR`  | 0.02  | Factor determining how much center capacity can be stretched if needed |
+| `MIN_STUDENT_IN_CENTER`    | 10    | Min. no of students from a school to be assigned to a center in normal circumstances. A smaller allocation is added to another center of the same school that has room for it, e.g. 100 + 100 + 7 becomes 107 + 100 |
+| `STRETCH_CAPACITY_FACTOR`  | 0.02  | Factor determining how much center capacity can be stretched if needed, also when a small allocation is added to a center |
 | `PREF_CUTOFF`              | -4    | Cutoff value for preference score allocation          |
+| `MAX_ATTEMPTS`             | 10    | Max. no of times the allocation is run if students are left without a center (`-a`, `--max-attempts`). It stops earlier if the students left can not get a center in any attempt (no coordinates, no allowed center). If there are simply too few seats all attempts are used |
 
 ### Input Files
 
@@ -73,6 +74,8 @@ To run `school_center.py` use the command below:
 ```bash
 python3 school_center.py sample_data/schools_grade12_2081.tsv sample_data/centers_grade12_2081.tsv sample_data/prefs.tsv
 ```
+
+Use `-s SEED` to get the same result again and `-a ATTEMPTS` to change how many times the allocation is run when students are left without a center (default 10).
 
 To run streamlit app locally, install streamlit and use this command: 
 
