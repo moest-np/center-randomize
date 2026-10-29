@@ -1,0 +1,15 @@
+# This workflow will add reviewers and assignee
+# on opened and ready_to_review pull requests.
+# 
+# This workflow uses .github/auto_assign.yml file as configuration.
+
+name: Auto assign reviewers
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened]
+
+jobs:
+  add-reviews:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: kentaro-m/auto-assign-action@v1.2.5
